@@ -1,0 +1,2 @@
+# ROM space now occupies full banks, meaning data is available in 64 KB chunks with 64 banks to choose from.
+# This requires less bank switching at the cost of not being able to read ROM, WRAM and SRAM within the same bank.

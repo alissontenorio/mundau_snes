@@ -1,0 +1,1 @@
+# 512 B CGRAM (Colour Graphics RAM): Fits 512 colour palette entries, each entry has the size of a word (16 bits).

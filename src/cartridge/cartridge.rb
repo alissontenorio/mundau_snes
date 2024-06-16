@@ -1,4 +1,4 @@
-class Cartridge
+class Cartridge2
     def initialize(rom)
         # @size = rom.size
         # @has_scm = @size % 1024 != 0
@@ -17,6 +17,4 @@ class Cartridge
         # @checksum_complement =
         # @checksum =
     end
-
-
 end

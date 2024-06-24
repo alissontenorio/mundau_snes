@@ -1,10 +1,12 @@
+require_relative '../../utils/base_converter'
+
 #  ROM TYPE (Bits 7-4 = Co-processor, Bits 3-0 = Type)
 #  ||____________________Type:
 #  |                     $00 = ROM
 #  |                     $01 = ROM+RAM
 # Co-processor:          $02 = ROM+RAM+Battery
 # $0X = DSP              $X3 = ROM+Co-processor
-# $1X = GSU              $X4 = ROM+Co-processor+RAM
+# $1X = GSU (SuperFX)    $X4 = ROM+Co-processor+RAM
 # $2X = OBC1             $X5 = ROM+Co-processor+RAM+Battery
 # $3X = SA-1             $X6 = ROM+Co-processor+Battery
 # $4X = S-DD1            $X9 = ROM+Co-processor+RAM+Battery+RTC-4513...
@@ -12,7 +14,9 @@
 # $Ex - Coprocessor is Other (Super Game Boy/Satellaview)
 # $Fx - Coprocessor is Custom (specified with $FFBF)
 module Rom
-    class Types
+    class Type
+        include Utils::BaseConverter
+
         CO_PROCESSORS = {
             0 => "DSP",
             1 => "GSU",
@@ -39,7 +43,7 @@ module Rom
         attr_accessor :has_co_processor, :rom_type, :co_processor
 
         def initialize(rom_type)
-            first_part, second_part = Utils::BaseConverter::digits_from_byte_from_hex_number(rom_type.ord)
+            first_part, second_part = digits_from_byte_from_hex_number(rom_type.ord)
             @has_co_processor = rom_type.ord >= 3
             @rom_type = TYPE[second_part]
             # ToDo: select when co_processor is custom from $FFBF  https://snes.nesdev.org/wiki/ROM_header

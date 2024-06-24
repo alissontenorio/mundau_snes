@@ -11,3 +11,10 @@
 # Todos os dados que trafegam entre o cartucho, Ram, PPU, APU, etc, passam por esse barramento.
 #
 # https://www.manualdocodigo.com.br/curso-assembly-snes-mega-parte57/
+module Snes
+    module Bus
+        class BusData < Utils::Singleton
+
+        end
+    end
+end

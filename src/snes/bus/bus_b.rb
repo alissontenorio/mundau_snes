@@ -4,6 +4,11 @@
 # O barramento de endereços B é um barramento de 16 bits que a Cpu utiliza para acessar registradores de I/O do Snes,
 # e é utilizado principalmente para a comunicação com a PPU e a APU.
 # https://www.manualdocodigo.com.br/curso-assembly-snes-mega-parte57/
-class BusB
+module Snes
+    module Bus
+        # 8-bits wide
+        class BusB < Utils::Singleton
 
+        end
+    end
 end

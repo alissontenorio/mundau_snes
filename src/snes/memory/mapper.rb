@@ -25,8 +25,8 @@ module Snes
 
             def read(address)
                 if @debug
-                    $logger.debug("Read address 0x#{address.to_s(16).upcase}.")
-                    $logger.debug("Cartridge type: #{@cartridge_type}.")
+                    $logger.debug("Read address 0x#{address.to_s(16).upcase}")
+                    # $logger.debug("Cartridge type: #{@cartridge_type}")
                 end
 
                 bank = get_bank(address)
@@ -44,8 +44,6 @@ module Snes
                 else
                     raise BankOutOfRangeError, "Unknown bank #{bank.to_s(16)}"
                 end
-
-                $logger.debug("") if @debug
             end
 
             protected
@@ -63,7 +61,6 @@ module Snes
             end
 
             def bank_type_for(bank)
-                $logger.debug(bank) if @debug
                 MemoryRange::BANKS.each do |type, ranges|
                     return type if ranges.any? { |r| r.include?(bank) }
                 end
@@ -73,7 +70,7 @@ module Snes
             # Read Banks
 
             def read_bank_system(bank, offset)
-                $logger.debug("#{__method__}") if @debug
+                $logger.debug("Bank System") if @debug
 
                 case offset
                 when MemoryRange::BANK_SYSTEM_OFFSET[:low_ram]
@@ -95,7 +92,7 @@ module Snes
             end
 
             def read_bank_rom(bank, offset)
-                $logger.debug("#{__method__}") if @debug
+                $logger.debug("Bank Rom") if @debug
 
                 if MemoryRange.in_sram_region?(@cartridge_type, bank, offset)
                     read_sram(bank, offset)
@@ -105,7 +102,7 @@ module Snes
             end
 
             def read_bank_ram(bank, offset)
-                $logger.debug("#{__method__}") if @debug
+                $logger.debug("Bank Ram") if @debug
 
                 if MemoryRange.in_bank_ram_low_ram_region?(bank, offset)
                     read_low_ram(bank, offset)
@@ -158,11 +155,59 @@ module Snes
             end
 
             def read_rom(bank, offset)
-                $logger.debug("#{__method__}") if @debug
+                # $logger.debug("#{__method__}") if @debug
+                rom_addr = rom_address(bank, offset)
+                $logger.debug("#{rom_addr.to_s(16)}") if @debug
+                @rom[rom_addr]
             end
 
             def read_ppu(bank, offset)
                 $logger.debug("#{__method__}") if @debug
+            end
+
+            def rom_address(bank, offset)
+                bank_pos = bank
+                case @cartridge_type
+                when :hirom
+                    # if MemoryRange.in_hirom_region?(bank, offset)
+                    #     first_bank = MemoryRange::ROM[:hirom][:bank].begin
+                    #     first_offset = MemoryRange::ROM[:hirom][:offset].begin
+                    #     page_size = MemoryRange::ROM[:hirom][:page_size]
+                    # else MemoryRange.in_hirom_mirror_region?(bank, offset)
+                    #     first_bank = MemoryRange::ROM[:hirom_mirror][:bank].first.begin
+                    #     first_offset = MemoryRange::ROM[:hirom_mirror][:offset].begin
+                    #     page_size = MemoryRange::ROM[:hirom_mirror][:page_size]
+                    #
+                    #     # Hirom mirror has a gap between banks 0x40 and 0x7F, so it's not contiguous..
+                    #     # Should probably refactor this, but I'm just lazy today
+                    #     # bank_pos = ( bank < 0x40 ) ? bank : bank - 0x40
+                    #     bank_pos += 0xC0
+                    # end
+                    # position_in_contiguous_memory(bank_pos, offset, first_bank, first_offset, page_size)
+                    if MemoryRange.in_hirom_region?(bank, offset)
+                        full_address = (bank << 16) + offset
+                        full_address - 0xC00000
+                    elsif MemoryRange.in_first_hirom_mirror_region?(bank, offset)
+                        page_size = MemoryRange::ROM[:hirom_mirror][:page_size]
+                        ((bank  & 0x7F) * page_size) + (offset & 0x7FFF)
+                    elsif MemoryRange.in_second_hirom_mirror_region?(bank, offset)
+                        page_size = MemoryRange::ROM[:hirom_mirror][:page_size]
+                        (((bank - 0x40) & 0x7F) * page_size) + (offset & 0x7FFF)
+                    end
+                when :lorom
+                    # if MemoryRange.in_lorom_region?(bank, offset)
+                    #     first_bank = MemoryRange::ROM[:lorom][:bank].begin
+                    # else MemoryRange.in_lorom_mirror_region?(bank, offset)
+                    #     first_bank = MemoryRange::ROM[:lorom_mirror][:bank].begin
+                    # end
+                    # first_offset = MemoryRange::ROM[:lorom][:offset].begin
+                    # page_size = MemoryRange::ROM[:lorom][:page_size]
+                    # position_in_contiguous_memory(bank_pos, offset, first_bank, first_offset, page_size)
+                    page_size = MemoryRange::ROM[:lorom][:page_size]
+                    ((bank  & 0x7F) * page_size) + (offset & 0x7FFF)
+                when :exhirom
+                    raise NotImplementedError, "#{__method__} is not yet implemented for exhirom"
+                end
             end
 
             # read dma/ppu2/hardware_registers

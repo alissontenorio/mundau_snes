@@ -1,4 +1,4 @@
-require_relative '../../exceptions'
+require_relative '../../../exceptions'
 require_relative 'hirom_memory_mapper'
 require_relative 'lorom_memory_mapper'
 

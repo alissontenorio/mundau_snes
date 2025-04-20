@@ -13,13 +13,13 @@ chrono_trigger_rom_filepath = "/mnt/c/Users/Alisson/dev/pessoal/mundau_snes/roms
 star_ocean_rom_filepath = "/mnt/c/Users/Alisson/dev/pessoal/mundau_snes/roms/S-DD1/Star Ocean (J) [!].smc"
 
 def set_logger
-    # logger = Logger.new(STDOUT)
     log_directory = 'log'
     FileUtils.mkdir_p(log_directory) unless Dir.exist?(log_directory)
     # Set up logger
     log_file = "#{log_directory}/snes.log"
     File.delete(log_file) if File.exist?(log_file)
 
+    # $logger = Logger.new(STDOUT)
     $logger = Logger.new(log_file)
     $logger.level = Logger::DEBUG
     $logger.formatter = proc do |severity, datetime, progname, msg|
@@ -44,10 +44,51 @@ console.insert_cartridge(megaman_x_rom_filepath) # LoRom
 console.turn_on
 console.print_cartridge_header
 
-console.m_map.read(0x00FFC0) # The ROM header resides at the end of the first 32 KiB bank at $007FC0 in the ROM, mapped to $00FFC0 in memory.
-console.m_map.read(0x00FFC1)
-console.m_map.read(0x00FFC2)
-console.m_map.read(0x00FFC3)
-console.m_map.read(0x3FFFC3)
+LO_ROM_HEADER = 0x80_FFC0 # lorom header
+LO_ROM_MIRROR_HEADER = 0x00_FFC0 # lorom mirror header
+LO_ROM_HEADER_LAST = 0xFF_FFFF # lorom header
+LO_ROM_MIRROR_HEADER_LAST = 0x7D_FFFF # lorom mirror header
 
 
+HI_ROM_HEADER = 0xC0_FFC0 # hirom header
+HI_ROM_MIRROR_HEADER = 0x01_FFC0 # hirom header
+HI_ROM_FIRST_MIRROR_HEADER_FIRST = 0x00_8000 # lorom header
+HI_ROM_SECOND_MIRROR_HEADER_FIRST = 0x80_8000 # lorom header
+HI_ROM_FIRST_MIRROR_HEADER_LAST = 0x3F_FFFF # lorom header
+HI_ROM_HEADER_LAST = 0xFF_FFFF # lorom header
+HI_ROM_MIRROR_HEADER_LAST = 0xBF_FFFF # lorom mirror header -> 3F FFFF
+
+# puts console.m_map.read(LO_ROM_HEADER) # Deve retornar 7fc0
+# puts console.m_map.read(LO_ROM_MIRROR_HEADER) # Deve retornar 7fc0
+# puts console.m_map.read(LO_ROM_HEADER_LAST) # Deve retornar 3fffff
+# puts console.m_map.read(LO_ROM_MIRROR_HEADER_LAST) # Deve retornar 3effff
+
+console.turn_off
+console.remove_cartridge
+
+
+start = HI_ROM_MIRROR_HEADER
+length = 21
+title = ""
+console.insert_cartridge(dkc2_rom_filepath) # HiRom
+console.turn_on
+# puts console.m_map.read(HI_ROM_HEADER) # Deve retornar ffc0
+# puts console.m_map.read(HI_ROM_MIRROR_HEADER) # Deve retornar ffc0
+# puts console.m_map.read(HI_ROM_HEADER_LAST) # Deve retornar 3F FFFF
+# puts console.m_map.read(HI_ROM_MIRROR_HEADER_LAST) # Deve retornar 3F FFFF
+# puts console.m_map.read(HI_ROM_FIRST_MIRROR_HEADER_FIRST) # Deve retornar 00 0000
+# puts console.m_map.read(HI_ROM_SECOND_MIRROR_HEADER_FIRST) # Deve retornar 20 0000
+# puts console.m_map.read(HI_ROM_FIRST_MIRROR_HEADER_LAST) # Deve retornar 1F FFFF
+
+begin
+    (start...(start + length)).each { |addr|
+        # $logger.debug(addr)
+        title += console.m_map.read(addr)
+        $logger.debug("")
+    }
+rescue => e
+    $logger.error("Caught exception: #{e.class} - #{e.message}")
+    $logger.error("Backtrace: #{e.backtrace.join("\n")}")
+end
+
+$logger.debug(title)

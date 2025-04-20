@@ -1,5 +1,5 @@
-require_relative '../../exceptions'
-require_relative 'hirom_memory_mapper'
+require_relative '../../../exceptions'
+require_relative 'bkp/hirom_memory_mapper'
 require_relative 'lorom_memory_mapper'
 
 

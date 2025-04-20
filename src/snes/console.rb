@@ -29,6 +29,7 @@ module Snes
         def insert_cartridge(filepath)
             rom_raw = open_rom(filepath)
             @cartridge = Rom::CartridgeBuilder.new(rom_raw).get_cartridge
+            @m_map = Snes::Memory::Mapper.new(@cartridge, RAM, SRAM, @debug)
         end
 
         def print_cartridge_header
@@ -37,21 +38,26 @@ module Snes
             puts "#{@cartridge.cartridge_type}"
         end
 
-        def set_memory_mapper
-            @m_map = Snes::Memory::Mapper.new(@cartridge, RAM, SRAM, @debug)
-        end
-
         def current_memory_mapper
             @m_map
         end
 
         def turn_on
             # ToDo: Check if Cartridge is inserted
-            set_memory_mapper
 
             # Access CPU / DMA
             # Access PPU
             # Access Controller
+        end
+
+        def turn_off
+            @cartridge = nil
+            @m_map = nil
+        end
+
+        def remove_cartridge
+            @cartridge = nil
+            @m_map = nil
         end
     end
 end

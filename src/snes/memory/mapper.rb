@@ -169,21 +169,6 @@ module Snes
                 bank_pos = bank
                 case @cartridge_type
                 when :hirom
-                    # if MemoryRange.in_hirom_region?(bank, offset)
-                    #     first_bank = MemoryRange::ROM[:hirom][:bank].begin
-                    #     first_offset = MemoryRange::ROM[:hirom][:offset].begin
-                    #     page_size = MemoryRange::ROM[:hirom][:page_size]
-                    # else MemoryRange.in_hirom_mirror_region?(bank, offset)
-                    #     first_bank = MemoryRange::ROM[:hirom_mirror][:bank].first.begin
-                    #     first_offset = MemoryRange::ROM[:hirom_mirror][:offset].begin
-                    #     page_size = MemoryRange::ROM[:hirom_mirror][:page_size]
-                    #
-                    #     # Hirom mirror has a gap between banks 0x40 and 0x7F, so it's not contiguous..
-                    #     # Should probably refactor this, but I'm just lazy today
-                    #     # bank_pos = ( bank < 0x40 ) ? bank : bank - 0x40
-                    #     bank_pos += 0xC0
-                    # end
-                    # position_in_contiguous_memory(bank_pos, offset, first_bank, first_offset, page_size)
                     if MemoryRange.in_hirom_region?(bank, offset)
                         full_address = (bank << 16) + offset
                         full_address - 0xC00000
@@ -195,14 +180,6 @@ module Snes
                         (((bank - 0x40) & 0x7F) * page_size) + (offset & 0x7FFF)
                     end
                 when :lorom
-                    # if MemoryRange.in_lorom_region?(bank, offset)
-                    #     first_bank = MemoryRange::ROM[:lorom][:bank].begin
-                    # else MemoryRange.in_lorom_mirror_region?(bank, offset)
-                    #     first_bank = MemoryRange::ROM[:lorom_mirror][:bank].begin
-                    # end
-                    # first_offset = MemoryRange::ROM[:lorom][:offset].begin
-                    # page_size = MemoryRange::ROM[:lorom][:page_size]
-                    # position_in_contiguous_memory(bank_pos, offset, first_bank, first_offset, page_size)
                     page_size = MemoryRange::ROM[:lorom][:page_size]
                     ((bank  & 0x7F) * page_size) + (offset & 0x7FFF)
                 when :exhirom

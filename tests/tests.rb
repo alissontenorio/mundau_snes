@@ -35,3 +35,41 @@
 # puts @m_map.read(0x9010C0)
 # puts @m_map.read(0xA010C0)
 # puts @m_map.read(0xBF1FFF)
+#
+# Access SRAM
+# @m_map.read(0x707FFF)
+# @m_map.read(0x708000)
+# @m_map.read(0x701FC0)
+# @m_map.read(0x701FC0)
+# @m_map.read(0x702FC0)
+# @m_map.read(0x705FC0)
+# @m_map.read(0x707FFF)
+# @m_map.read(0x7D1FC0)
+# @m_map.read(0x7D2FC0)
+# @m_map.read(0x7D5FC0)
+# @m_map.read(0x7D7FFF)
+
+
+
+
+# Test bank reading
+# begin
+#     console.m_map.read(0x101000) # bank system, low ram
+#     console.m_map.read(0xE16000) # bank rom, read rom
+#     console.m_map.read(0x7D0100) # lorom -> bank rom, read sram - hirom -> bank rom, read rom
+#     console.m_map.read(0x7E0100) # bank ram, low ram
+#     console.m_map.read(0x7E7000) # bank ram, read ram
+#     console.m_map.read(0x7F0100) # bank ram, read ram
+#     console.m_map.read(0x203000) # bank system, read ppu
+#     console.m_map.read(0x234111) # bank system, read controller
+#     console.m_map.read(0x255000) # bank system, read cpu
+#     console.m_map.read(0x2F6000) # bank system, expansion
+#     console.m_map.read(0x3E6000) # hirom -> bank system, expansion, read sram - lorom -> bank system, expansion
+#     console.m_map.read(0x30F000) # bank system, Read rom
+#     console.m_map.read(0x434000) # bank rom, Read rom
+#     console.m_map.read(0x459001) # bank rom, Read rom
+#     console.m_map.read(0x723000) # hirom -> bank rom, read rom - lorom -> bank rom, read sram
+# rescue => e
+#     $logger.error("Caught exception: #{e.class} - #{e.message}")
+#     $logger.error("Backtrace: #{e.backtrace.join("\n")}")
+# end

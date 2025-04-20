@@ -35,7 +35,7 @@ module Rom
             @rom.type = rom_types_mapper.rom_type
 
             rom_map_mode = MapMode.new(@rom.map_mode_raw)
-            @rom.map_mode_speed = rom_map_mode.speed
+            @rom.map_mode_speed = rom_map_mode.speed # 2.68 Mhz or 3.58 MHz
             @rom.map_mode_map_mode = rom_map_mode.map_mode
 
             begin

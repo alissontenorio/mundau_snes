@@ -138,6 +138,10 @@ module Rom
             map_mode_map_mode[0]
         end
 
+        def cartridge_type_to_sym
+            cartridge_type&.downcase&.to_sym
+        end
+
         # Debug purposes
         def print
             require 'json'

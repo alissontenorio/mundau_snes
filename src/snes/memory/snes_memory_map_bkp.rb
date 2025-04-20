@@ -2,9 +2,20 @@ require_relative '../../exceptions'
 require_relative 'hirom_memory_mapper'
 require_relative 'lorom_memory_mapper'
 
+
+# ToDo: Segmentation Fault
+#
+# This console also features a special ‘anomaly’ called Open Bus:
+# If there is an instruction trying to read from an unmapped/invalid address,
+# the last value read is supplied instead (the CPU stores this value in a register
+# called Memory Data Register or MDR) and execution carries on in an unpredictable state.
+#
+# For comparison, the 68000 uses a vector table to handle exceptions, so execution will
+# be redirected whenever a fault is detected.
+
 module Snes
     module Memory
-        class MemoryMap
+        class MemoryMapBKP
             BANK_RANGE = 0x00..0xFF
             OFFSET_RANGE = 0x0000..0xFFFF
 
@@ -32,13 +43,13 @@ module Snes
             end
 
             def range_check(bank, offset)
-                unless bank.between?(0x00, 0xFF)
+                unless BANK_RANGE.include?(bank)
                     raise AddressOutOfRangeError.new(
                         "Bank out of range for address #{bank.to_s(16).rjust(2, '0')}:#{offset.to_s(16).rjust(4, '0')}"
                     )
                 end
 
-                unless offset.between?(0x0000, 0xFFFF)
+                unless OFFSET_RANGE.include?(offset)
                     raise AddressOutOfRangeError.new(
                         "Offset out of range for address #{bank.to_s(16).rjust(2, '0')}:#{offset.to_s(16).rjust(4, '0')}"
                     )

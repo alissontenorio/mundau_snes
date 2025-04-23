@@ -165,6 +165,8 @@ module Snes
                 $logger.debug("#{__method__}") if @debug
             end
 
+            # Convert the Snes address to the ROM address
+            # ToDo: Rename method to something more appropriate
             def rom_address(bank, offset)
                 bank_pos = bank
                 case @cartridge_type
@@ -173,6 +175,8 @@ module Snes
                         full_address = (bank << 16) + offset
                         full_address - 0xC00000
                     elsif MemoryRange.in_first_hirom_mirror_region?(bank, offset)
+                        # Hirom mirror region are separated.
+                        # There is a gap between the first and second mirror region.
                         page_size = MemoryRange::ROM[:hirom_mirror][:page_size]
                         ((bank  & 0x7F) * page_size) + (offset & 0x7FFF)
                     elsif MemoryRange.in_second_hirom_mirror_region?(bank, offset)

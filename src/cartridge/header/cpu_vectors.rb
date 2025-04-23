@@ -45,7 +45,7 @@ module Rom
             include Utils::Endian
 
             def get_vectors(raw_rom, header_start_addr)
-                # Should be FFE0 or 7FE0 (if hirom or lorom)
+                # Should be FFE4 or 7FE4 (if hirom or lorom)
                 addr = header_start_addr + 36
                 [native_mode_vectors(raw_rom, addr), emulation_mode_vectors(raw_rom, addr)]
             end

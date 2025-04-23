@@ -12,23 +12,27 @@
 # Addressing modes are put in place so basic instructions may be interpreted correctly given a wide range of operand
 
 
-class INSTRUCTIONS
-    HASHMAP = {
-        0x61 => adc_dp_x,
-        0x63 => adc_sr_s,
-        0x65 => adc_dp,
-    }
+module Snes
+    module CPU
+        module Instructions
+            OPCODES_TABLE = {
+                0x61 => adc_dp_x,
+                0x63 => adc_sr_s,
+                0x65 => adc_dp,
+            }
 
-    def adc_dp_x(dp, x)
-        dp = dp + x
-    end
+            def adc_dp_x(dp, x)
+                dp = dp + x
+            end
 
-    def adc_sr_s(sr, s)
+            def adc_sr_s(sr, s)
 
-    end
+            end
 
-    def adc_dp(dp)
+            def adc_dp(dp)
 
+            end
+        end
     end
 end
 

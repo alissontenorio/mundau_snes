@@ -15,22 +15,14 @@
 module Snes
     module CPU
         module Instructions
-            OPCODES_TABLE = {
-                0x61 => adc_dp_x,
-                0x63 => adc_sr_s,
-                0x65 => adc_dp,
-            }
+            module Opcodes
+                # p_flags -> nvmx_dizc
+                Opcode = Struct.new(:handler, :description, :addressing_mode, :p_flags, :bytes_used, :cycles)
 
-            def adc_dp_x(dp, x)
-                dp = dp + x
-            end
-
-            def adc_sr_s(sr, s)
-
-            end
-
-            def adc_dp(dp)
-
+                TABLE = {
+                    0x78 => Opcode.new(:sei, 'Set Interrupt Disable Flag', AddressingModes::IMPLIED, 0b0000_0100, 1, 2),
+                    0xE8 => Opcode.new(:inx, 'Increment X register', AddressingModes::IMPLIED, 0b1000_0010, 1, 2),
+                }
             end
         end
     end

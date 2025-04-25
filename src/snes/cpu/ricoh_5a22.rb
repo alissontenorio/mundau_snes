@@ -44,7 +44,7 @@ module Snes
             # DMA geral, para uma transferência de blocos à uma taxa de 2.68MB/s
             # DMA H-blank, para transferência de pequenos conjuntos de dados no final de cada linha de scan fora do período ativo de exibição.
             # Multiplicação e divisão de registros
-            WDC_65C816 = Snes::CPU::WDC_65C816.instance
+            WDC_65C816 = Snes::CPU::WDC65816.instance
 
             GPDMA = Snes::CPU::DMA::GPDMA.instance
             HDMA = Snes::CPU::DMA::HDMA.instance

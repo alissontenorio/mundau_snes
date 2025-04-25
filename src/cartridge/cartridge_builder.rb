@@ -58,6 +58,8 @@ module Rom
             end
 
             # Interrupts
+            # NATIVE VECTOR (65C816 Mode)
+            # EMU VECTOR (6502 Mode)
             @rom.native_vectors, @rom.emulation_vectors = CpuVectors.get_vectors(rom_raw, header_start_addr)
 
             if @rom.has_scm # removing scm header if necessary

@@ -1,5 +1,3 @@
-require_relative 'singleton'
-
 module Utils
     module BaseConverter
         # "0A".to_i(16) #=>10

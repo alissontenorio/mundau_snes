@@ -1,3 +1,5 @@
+require 'singleton'
+
 # Horizontal DMA (HDMA) performs a small transfer after each horizontal scan
 # (while the CRT beam is preparing to draw the next row).
 # This avoids interrupting the CPU for long intervals but transfers are limited to 4 bytes per scanline
@@ -11,7 +13,9 @@ module Snes
             # "BusA Address" in the CPU (0000000 ~ 0FFFFFF) and
             # "BusB Address" in the S-PUU (0002100 ~ 00021FF),
             # which has 8 channels total.
-            class HDMA < Utils::Singleton
+            class HDMA
+                include Singleton
+
                 # Special DMA which can transfer data automatically, synchronizzing with H-Blank.
                 # The S-PPU settings can be varied by each horizontal scanline and special effects can be added to
                 # the picture

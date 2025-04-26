@@ -1,14 +1,16 @@
-require_relative '../../utils/singleton'
 require_relative '../bus/bus_a'
 require_relative '../bus/bus_b'
-require_relative 'wdc_65C816'
+require_relative 'wdc_65816'
 require_relative 'dma/gpdma'
 require_relative 'dma/hdma'
+require 'singleton'
 
 module Snes
     module CPU
         # Core - Ricoh 5A22 - Based on 6502 CPU - WDC 65C816
-        class Ricoh_5A22 < Utils::Singleton
+        class Ricoh_5A22
+            include Singleton
+
             # # Singleton stuff
             # @instance = new
             # private_class_method :new
@@ -44,7 +46,7 @@ module Snes
             # DMA geral, para uma transferência de blocos à uma taxa de 2.68MB/s
             # DMA H-blank, para transferência de pequenos conjuntos de dados no final de cada linha de scan fora do período ativo de exibição.
             # Multiplicação e divisão de registros
-            WDC_65C816 = Snes::CPU::WDC65816.instance
+            WDC_65816 = Snes::CPU::WDC65816.instance
 
             GPDMA = Snes::CPU::DMA::GPDMA.instance
             HDMA = Snes::CPU::DMA::HDMA.instance

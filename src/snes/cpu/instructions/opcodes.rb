@@ -1,3 +1,12 @@
+require_relative 'addressing_modes'
+require_relative 'impl/arithmetic'
+require_relative 'impl/bit_manipulation'
+require_relative 'impl/data_movement'
+require_relative 'impl/flow_of_control'
+require_relative 'impl/logical'
+require_relative 'impl/subroutine_calls'
+require_relative 'impl/system_control'
+
 # It has 92 instructions - https://wiki.superfamicom.org/65816-reference
 
 # The size of instructions can vary between 1 byte (8 bits) and 4 bytes (32 bits)
@@ -20,8 +29,10 @@ module Snes
                 Opcode = Struct.new(:handler, :description, :addressing_mode, :p_flags, :bytes_used, :cycles)
 
                 TABLE = {
-                    0x78 => Opcode.new(:sei, 'Set Interrupt Disable Flag', AddressingModes::IMPLIED, 0b0000_0100, 1, 2),
-                    0xE8 => Opcode.new(:inx, 'Increment X register', AddressingModes::IMPLIED, 0b1000_0010, 1, 2),
+                    0x78 => Opcode.new(:sei, 'Set Interrupt Disable Flag', AddressingMode::IMPLIED, 0b0000_0100, 1, 2),
+                    0x64 => Opcode.new(:stz_dp, 'Store Zero to Memory', AddressingMode::DIRECT, 0b0000_0000, 2, 3),
+                    0x9C => Opcode.new(:stz_absolute, 'Store Zero to Memory', AddressingMode::ABSOLUTE, 0b0000_0000, 3, 4),
+                    0xE8 => Opcode.new(:inx, 'Increment X register', AddressingMode::IMPLIED, 0b1000_0010, 1, 2),
                 }
             end
         end

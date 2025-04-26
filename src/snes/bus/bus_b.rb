@@ -1,3 +1,5 @@
+require 'singleton'
+
 # 8-bit ‘B Bus’ controlled by the S-PPU: Connects the cartridge, CPU, WRAM, S-PPU and the Audio CPU
 # See images/snes_simple_archtecture
 #
@@ -7,8 +9,8 @@
 module Snes
     module Bus
         # 8-bits wide
-        class BusB < Utils::Singleton
-
+        class BusB
+            include Singleton
         end
     end
 end

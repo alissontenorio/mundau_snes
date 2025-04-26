@@ -15,9 +15,11 @@ module Snes
             # usage BANK_SYSTEM_OFFSET_RANGES[:ppu].include?(offset)
             BANK_SYSTEM_OFFSET = {
                 low_ram:      0x0000..0x1FFF,
-                ppu:          0x2000..0x3FFF,
+                ppu:          0x2000..0x21FF,
+                apu:          0x2200..0x23FF,
                 controller:   0x4000..0x41FF,
-                cpu_dma:      0x4200..0x5FFF,
+                internal_cpu: 0x4200..0x42FF,
+                dma:          0x4300..0x43FF,
                 expansion:    0x6000..0x7FFF,
                 rom:          0x8000..0xFFFF
             }

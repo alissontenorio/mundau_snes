@@ -1,3 +1,5 @@
+require 'singleton'
+
 # General Purpose DMA performs transfers at any time. The CPU is stopped until the transfer is finished.
 #
 # The system provides eight channels to set up DMA transfers, thus enabling to dispatch up to eight independent transfers at once
@@ -11,7 +13,8 @@ module Snes
             # which has 8 channels total.
             #
             # CPU process stops automatically during DMA period and restarts after DMA is completed
-            class GPDMA < Utils::Singleton
+            class GPDMA
+                include Singleton
                 # Can transfer the data rapidly between 2 types of memory devices:
                 # - Memory which can be accessed directly by the CPU (e.g ROM on the game cartridge)
                 # - Memory which has to be accessed through the S-PPU, such as the V-RAM

@@ -15,18 +15,20 @@ require_relative 'memory_range'
 module Snes
     module Memory
         class Mapper
-            def initialize(cartridge, ram, sram, debug = false)
+            def initialize(cartridge, ram, sram, internal_cpu_registers, debug = false)
                 @cartridge_type = cartridge.cartridge_type_to_sym
                 @rom = cartridge.rom_raw
                 @ram = ram
                 @sram = sram
                 @debug = debug
+                @internal_cpu_registers = internal_cpu_registers
             end
 
-            def read(address)
-                if @debug
-                    $logger.debug("Read address 0x#{address.to_s(16).upcase}")
-                    # $logger.debug("Cartridge type: #{@cartridge_type}")
+            def access(address, operation, value = nil)
+                $logger.debug(" ") if @debug
+
+                unless [:read, :write].include?(operation)
+                    raise "Invalid operation: #{operation}. Use :read or :write."
                 end
 
                 bank = get_bank(address)
@@ -36,11 +38,23 @@ module Snes
 
                 case bank_type_for(bank)
                 when :system
-                    read_bank_system(bank, offset)
+                    if @debug
+                        $logger.debug("Bank System - #{operation.to_s} address 0x#{address.to_s(16).upcase}")
+                        # $logger.debug("Cartridge type: #{@cartridge_type}")
+                    end
+                    access_bank_system(bank, offset, operation, value)
                 when :rom
-                    read_bank_rom(bank, offset)
+                    if @debug
+                        $logger.debug("Bank Rom - #{operation.to_s} address 0x#{address.to_s(16).upcase}")
+                        # $logger.debug("Cartridge type: #{@cartridge_type}")
+                    end
+                    access_bank_rom(bank, offset, operation, value)
                 when :ram
-                    read_bank_ram(bank, offset)
+                    if @debug
+                        $logger.debug("Bank Ram - #{operation.to_s} address 0x#{address.to_s(16).upcase}")
+                        # $logger.debug("Cartridge type: #{@cartridge_type}")
+                    end
+                    access_bank_ram(bank, offset, operation, value)
                 else
                     raise BankOutOfRangeError, "Unknown bank #{bank.to_s(16)}"
                 end
@@ -67,53 +81,51 @@ module Snes
                 nil
             end
 
-            # Read Banks
+            # Memory Access Banks
 
-            def read_bank_system(bank, offset)
-                $logger.debug("Bank System") if @debug
-
+            def access_bank_system(bank, offset, operation, value)
                 case offset
-                when MemoryRange::BANK_SYSTEM_OFFSET[:low_ram]
-                    read_low_ram(bank, offset)
-                when MemoryRange::BANK_SYSTEM_OFFSET[:ppu]
-                    read_ppu(bank, offset)
-                when MemoryRange::BANK_SYSTEM_OFFSET[:controller]
-                    read_controller(bank, offset)
-                when MemoryRange::BANK_SYSTEM_OFFSET[:cpu_dma]
-                    read_cpu_dma(bank, offset)
-                when MemoryRange::BANK_SYSTEM_OFFSET[:expansion]
-                    read_sram(bank, offset) if MemoryRange.in_sram_region?(@cartridge_type, bank, offset)
+                when MemoryRange::BANK_SYSTEM_OFFSET[:low_ram]      # 0x0000..0x1FFF
+                    access_low_ram(bank, offset, operation, value)
+                when MemoryRange::BANK_SYSTEM_OFFSET[:ppu]          # 0x2000..0x21FF
+                    access_ppu(bank, offset, operation, value)
+                when MemoryRange::BANK_SYSTEM_OFFSET[:apu]          # 0x2000..0x21FF
+                    access_apu(bank, offset, operation, value)
+                when MemoryRange::BANK_SYSTEM_OFFSET[:controller]   # 0x4000..0x41FF
+                    access_controller(bank, offset, operation, value)
+                when MemoryRange::BANK_SYSTEM_OFFSET[:internal_cpu] # 0x4200..0x42FF
+                    access_internal_cpu(bank, offset, operation, value)
+                when MemoryRange::BANK_SYSTEM_OFFSET[:dma]          # 0x4300..0x43FF
+                    access_dma(bank, offset, operation, value)
+                when MemoryRange::BANK_SYSTEM_OFFSET[:expansion]    # 0x6000..0x7FFF
+                    access_sram(bank, offset, operation, value) if MemoryRange.in_sram_region?(@cartridge_type, bank, offset)
                     # ToDo: Deal with the rest
-                when MemoryRange::BANK_SYSTEM_OFFSET[:rom]
-                    read_rom(bank, offset)
+                when MemoryRange::BANK_SYSTEM_OFFSET[:rom]          # 0x8000..0xFFFF
+                    access_rom(bank, offset, operation, value)
                 else
                     raise AddressOutOfRangeError.new(bank, offset)
                 end
             end
 
-            def read_bank_rom(bank, offset)
-                $logger.debug("Bank Rom") if @debug
-
+            def access_bank_rom(bank, offset, operation, value)
                 if MemoryRange.in_sram_region?(@cartridge_type, bank, offset)
-                    read_sram(bank, offset)
+                    access_sram(bank, offset, operation, value)
                 else
-                    read_rom(bank, offset) # ToDo: Maybe check if its not in region?
+                    access_rom(bank, offset, operation, value) # ToDo: Maybe check if its not in region?
                 end
             end
 
-            def read_bank_ram(bank, offset)
-                $logger.debug("Bank Ram") if @debug
-
+            def access_bank_ram(bank, offset, operation, value)
                 if MemoryRange.in_bank_ram_low_ram_region?(bank, offset)
-                    read_low_ram(bank, offset)
+                    access_low_ram(bank, offset, operation, value)
                 else
-                    read_ram(bank, offset)
+                    access_ram(bank, offset, operation, value)
                 end
             end
 
-            # Read Specifics
+            # Memory Access Specifics
 
-            def read_sram(bank, offset)
+            def access_sram(bank, offset, operation, value)
                 $logger.debug("#{__method__}") if @debug
 
                 case @cartridge_type
@@ -132,36 +144,65 @@ module Snes
                 end
 
                 sram_pos = position_in_contiguous_memory(bank, offset, first_bank, first_offset, page_size)
-                @sram[sram_pos]
+                if operation == :read
+                    @sram[sram_pos]
+                elsif operation == :write
+                    @sram[sram_pos] = value
+                end
             end
 
-            def read_ram(bank, offset)
+            def access_ram(bank, offset, operation, value)
                 $logger.debug("#{__method__}") if @debug
+
                 ram_pos = position_in_contiguous_memory(bank, offset, 0x7E, 0x0, 0x10_000)
-                @ram[ram_pos]
+
+                if operation == :read
+                    @ram[ram_pos]
+                elsif operation == :write
+                    @ram[ram_pos] = value
+                end
             end
 
-            def read_low_ram(bank, offset)
+            def access_low_ram(bank, offset, operation, value)
                 $logger.debug("#{__method__}") if @debug
-                @ram[offset]
+
+                if operation == :read
+                    @ram[offset]
+                elsif operation == :write
+                    @ram[offset] = value
+                end
             end
 
-            def read_controller(bank, offset)
+            def access_controller(bank, offset, operation, value)
                 $logger.debug("#{__method__}") if @debug
             end
 
-            def read_cpu_dma(bank, offset)
+            def access_internal_cpu(bank, offset, operation, value)
+                $logger.debug("#{__method__}") if @debug
+                if operation == :read
+                    @internal_cpu_registers.read(offset)
+                elsif operation == :write
+                    @internal_cpu_registers.write(offset, value)
+                end
+            end
+
+            def access_dma(bank, offset, operation, value)
                 $logger.debug("#{__method__}") if @debug
             end
 
-            def read_rom(bank, offset)
-                # $logger.debug("#{__method__}") if @debug
+            def access_rom(bank, offset, operation, value)
+                $logger.debug("#{__method__}") if @debug
                 rom_addr = rom_address(bank, offset)
-                $logger.debug("#{rom_addr.to_s(16)}") if @debug
-                @rom[rom_addr]
+                # $logger.debug("#{rom_addr.to_s(16)}") if @debug
+
+                @rom[rom_addr].ord if operation == :read
             end
 
-            def read_ppu(bank, offset)
+            def access_ppu(bank, offset, operation, value)
+                $logger.debug("#{__method__}") if @debug
+            end
+
+            def access_apu(bank, offset, operation, value)
                 $logger.debug("#{__method__}") if @debug
             end
 

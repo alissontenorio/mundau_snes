@@ -1,7 +1,7 @@
 module Snes
     module CPU
         module Instructions
-            class AddressingModes
+            class AddressingMode
                 ABSOLUTE = :absolute
                 ABSOLUTE_INDEXED_LONG = :absolute_indexed_long
                 ABSOLUTE_INDEXED_X = :absolute_indexed_x

@@ -20,21 +20,28 @@ star_ocean_rom_filepath = "/mnt/c/Users/Alisson/dev/pessoal/mundau_snes/roms/S-D
 def set_logger
     log_directory = 'log'
     FileUtils.mkdir_p(log_directory) unless Dir.exist?(log_directory)
-    # Set up logger
+
+    # Set up log file
     log_file = "#{log_directory}/snes.log"
     File.delete(log_file) if File.exist?(log_file)
 
+    # Create logger that writes to file
     # $logger = Logger.new(STDOUT)
     $logger = Logger.new(log_file)
     $logger.level = Logger::DEBUG
+
+    # Custom log message format
     $logger.formatter = proc do |severity, datetime, progname, msg|
         "#{severity} -- : #{msg}\n"
     end
+
+    # Ensure flushing of logs after each log entry
+    $logger.instance_variable_get(:@logdev).dev.sync = true
 end
 
 set_logger
 
-# console = Snes::Console.new(debug=true)
+# console = Snes::Console.new(debug=false)
 console = Snes::Console.new(debug=true)
 
 # console.insert_cartridge(pacman_rom_filepath) # LoRom
@@ -47,12 +54,21 @@ rom_raw = open_rom(zelda_rom_filepath)
 # rom_raw = open_rom(megaman_x_rom_filepath) # lorom fast
 cartridge = Rom::CartridgeBuilder.new(rom_raw).get_cartridge
 console.insert_cartridge(cartridge)
-console.turn_on
-console.print_cartridge_header
+# console.print_cartridge_header
 
-puts cartridge.emulation_vectors[:reset]
+
+
+puts "Turning on the console"
+puts ""
+console.turn_on
+
+
+
+
+
 # Since its lorom, the bank should be x00
-puts console.m_map.read(0x00_8000).ord.to_s(16)
+# puts cartridge.emulation_vectors[:reset]
+# puts console.m_map.access(0x00_8000, :read).ord.to_s(16)
 
 # // On RESET
 # cpu.E = 1;               // Emulation mode

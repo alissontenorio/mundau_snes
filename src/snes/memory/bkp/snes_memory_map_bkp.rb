@@ -68,7 +68,7 @@ module Snes
                 when 0x40..0x7D
                     @mapper.read_first_bank_rom(bank, offset)
                 when 0x7E, 0x7F
-                    @mapper.read_bank_ram(bank, offset)
+                    @mapper.memory_access_bank_ram(bank, offset)
                 when 0x80..0xBF
                     @mapper.read_second_bank_system(bank, offset)
                 when 0xC0..0xFF

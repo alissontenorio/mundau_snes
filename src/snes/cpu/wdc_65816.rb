@@ -1,6 +1,11 @@
+require_relative 'instructions/opcodes'
+require_relative 'internal_cpu_registers'
+
 module Snes
     module CPU
-        class WDC65816 < Utils::Singleton
+        class WDC65816
+            include Singleton
+
             include Snes::CPU::Instructions::Opcodes
 
             include Snes::CPU::Instructions::DataMovement
@@ -12,6 +17,8 @@ module Snes
             include Snes::CPU::Instructions::SystemControl
 
 
+            InternalCPU_Registers = Snes::CPU::InternalCPURegisters.instance
+
             # # Singleton stuff
             # @instance = new
             # private_class_method :new
@@ -19,10 +26,11 @@ module Snes
 
             attr_accessor :a, :x, :y, :pc, :sp, :p, :dp, :dbr, :pbr
 
-            def initialize(memory)
+            def setup(memory, reset_addr, debug=false)
+                @debug = debug
                 @memory = memory
 
-                @opcodes_table = Snes::CPU::Instructions::OPCODES::TABLE
+                @opcodes_table = Snes::CPU::Instructions::Opcodes::TABLE
 
                 # Accumulator
                 # 8 or 16 Bit
@@ -45,7 +53,7 @@ module Snes
                 @y = 0
 
                 # Program Counter - Holds the memory address of the current CPU instruction
-                @pc = 0
+                @pc = reset_addr
 
                 # Stack Pointer - The stack pointer, points to the next available(unused) location on the stack.
                 @sp = 0x01FF
@@ -63,7 +71,7 @@ module Snes
                 # C 	    #$01 	00000001 	Carry
                 # E 			                6502 emulation mode
                 # B 	    #$10 	00010000 	Break (emulation mode only)
-                @p = 0x14
+                @p = 0x34
 
                 # Direct Page - Direct page register, used for direct page addressing modes.
                 # Holds the memory bank address of the data the CPU is accessing.
@@ -100,49 +108,102 @@ module Snes
                 @cycles = 0
             end
 
-            def fetch_decode_execute
-                @cycles = 0
-                @pc &= 0xFFFF
-
-                # ToDo: Check this
-                # opcode = self.memory.read((self.PBR << 16) +self.PC)
-                # # this meean every address > 0xFF will be wrapped. E.g. 0xFF +1 == 0x00
-                # # TODO: use BCD sub if D Flag is set
-
-
-                opcode_data = @opcodes_table[opcode]
-
-                raise NotImplementedError, "Opcode 0x%02X not implemented" % opcode unless opcode_data
-
+            def disassemble(opcode_data)
                 handler = opcode_data.handler
                 description = opcode_data.description
                 addressing_mode = opcode_data.addressing_mode
                 p_flags = opcode_data.p_flags
-                bytes_used = opcode_data.bytes_used
+                base_bytes_used = opcode_data.bytes_used
                 base_cycles = opcode_data.cycles
 
-                puts "Handler: #{handler}"
-                puts "Description: #{description}"
-                puts "Addressing Mode: #{addressing_mode}"
-                puts "P Flags: #{p_flags.to_s(2).rjust(8, '0')}"  # Exibindo os p_flags como binário
-                puts "Bytes Used: #{bytes_used}"
-                puts "Base Cycles: #{base_cycles}"
+                puts opcode_data
 
-                send(handler)
+                # puts "Handler: #{handler}"
+                # puts "Description: #{description}"
+                # puts "Addressing Mode: #{addressing_mode}"
+                # puts "P Flags: #{p_flags.to_s(2).rjust(8, '0')}"
+                # puts "Bytes Used: #{base_bytes_used}"
+                # puts "Base Cycles: #{base_cycles}"
+                puts ""
+            end
 
-                old_pc = @pc
+
+            def fetch_decode_execute
+                $logger.debug("--------------------------") if @debug
+                $logger.debug("Fetch decode execute start") if @debug
+                @cycles = 0     # Clear cycles
+                @pc &= 0xFFFF   # If PC exceeeds FFFF
+
+                opcode_addr = emulation_mode? ? @pc : ((@pbr << 16) + @pc)
+                opcode = @memory.access(opcode_addr, :read)
+                opcode_data = @opcodes_table[opcode] # 1 cycle for fetching the opcode
+                raise NotImplementedError, "Opcode 0x%02X not implemented" % opcode unless opcode_data
+                puts opcode_data
+                handler = opcode_data.handler
+                base_cycles = opcode_data.cycles
+                $logger.debug("#{handler} : #{@pc.to_s(16)}") if @debug
                 increment_pc
-                set_cycles(base_cycles, old_pc)
+
+                @cycles += base_cycles
+
+                result = send(handler)
+
+                puts
+                $logger.debug(" ") if @debug
+                $logger.debug(" ") if @debug
             end
 
-            def set_cycles(base_cycles, old_pc)
+            def increment_cycles_if_page_crossing(old_pc)
                 # Checks whether X is 16-bit and if the last opcode fetch crossed a page boundary.
-                extra_cycle = is_page_crossing?(old_pc) ? 1 : 0
-                @cycles += base_cycles + extra_cycle
+                # extra_cycle if necessary
+                @cycles += is_page_crossing?(old_pc) ? 1 : 0
             end
 
-            def fetch_byte
-                @memory[@pc]
+            def read_8(address = full_pc)
+                @memory.access(address & 0xFFFFFF, :read)
+            end
+
+            def read_16
+                lo = read_8(full_pc)
+                increment_pc
+                hi = read_8(full_pc)
+                increment_pc
+                (hi << 8) | lo # Little Endian Word Fetch from Instruction Stream
+            end
+
+            def write_8(address, value)
+                @memory.access(address & 0xFFFFFF, :write, value & 0xFF)
+            end
+
+            def write_16(address, value)
+                write_8(address, value & 0xFF)
+                write_8(address + 1, (value >> 8) & 0xFF)
+            end
+
+            # Effective address using DBR (for Absolute)
+            def address_with_dbr(offset)
+                (@dbr << 16) | (offset & 0xFFFF)
+            end
+
+            # Direct Page mode
+            def address_direct_page(offset)
+                dp_address = (@dp + offset) & 0xFFFF
+                (@dbr << 16) | dp_address
+            end
+
+            def address_direct_page_x(offset)
+                # Use only 8 bits of X if the X flag is set (index registers are 8-bit)
+                x_value = status_p_flag?(:x) ? (@x & 0xFF) : @x
+
+                # Compute 16-bit direct page address
+                dp_address = (@dp + offset + x_value) & 0xFFFF
+
+                # Return full 24-bit effective address using the current Data Bank
+                (@dbr << 16) | dp_address
+            end
+
+            def address_from_absolute_x(offset)
+                (@dbr << 16) | ((offset + @x) & 0xFFFF)
             end
 
             def emulation_mode?
@@ -168,7 +229,8 @@ module Snes
             end
 
             def inspect
-                "#<CPU A=%02X P=%08b %s>" % [@a, @p, CPU.debug_format_flags(@p)]
+                "#<CPU PBR=%02X PC=%04X A=%02X X=%02X Y=%02X SP=%04X DP=%02X DBR=%02X Emulation=%s Cycles=%s P=%08b %s>" %
+                    [@pbr, @pc, @a, @x, @y, @sp, @dp, @dbr, @emulation_mode, @cycles, @p, WDC65816.debug_format_flags(@p)]
             end
 
             def status_p_flag?(symbol)
@@ -195,15 +257,17 @@ module Snes
             end
 
             def increment_pc(bytes = 1)
+                old_pc = @pc
                 @pc += bytes
+                increment_cycles_if_page_crossing(old_pc)
                 if @pc > 0xFFFF
                     @pc &= 0xFFFF
-                    @pb = (@pb + 1) & 0xFF if native_mode?
+                    @pbr = (@pbr + 1) & 0xFF if native_mode?
                 end
             end
 
             def full_pc
-                (@pb << 16) | @pc
+                (@pbr << 16) | @pc
             end
 
             # Instructions That Could Cross Page Boundaries:

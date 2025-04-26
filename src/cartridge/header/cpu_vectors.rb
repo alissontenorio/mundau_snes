@@ -84,24 +84,24 @@ module Rom
             # WDC 65C816
             def native_mode_vectors(raw_rom, addr)
                 {
-                    cop: little_endian_bin(raw_rom[addr].ord.to_s(16), raw_rom[addr+1].ord.to_s(16)),
-                    brk: little_endian_bin(raw_rom[addr+2].ord.to_s(16), raw_rom[addr+3].ord.to_s(16)),
-                    abort: little_endian_bin(raw_rom[addr+4].ord.to_s(16), raw_rom[addr+5].ord.to_s(16)),
-                    nmi: little_endian_bin(raw_rom[addr+6].ord.to_s(16), raw_rom[addr+7].ord.to_s(16)),
-                    none: little_endian_bin(raw_rom[addr+8].ord.to_s(16), raw_rom[addr+9].ord.to_s(16)),
-                    irq: little_endian_bin(raw_rom[addr+10].ord.to_s(16), raw_rom[addr+11].ord.to_s(16))
+                    cop: little_endian_bin(raw_rom[addr].ord.to_s(16), raw_rom[addr+1].ord.to_s(16)).to_i(16),
+                    brk: little_endian_bin(raw_rom[addr+2].ord.to_s(16), raw_rom[addr+3].ord.to_s(16)).to_i(16),
+                    abort: little_endian_bin(raw_rom[addr+4].ord.to_s(16), raw_rom[addr+5].ord.to_s(16)).to_i(16),
+                    nmi: little_endian_bin(raw_rom[addr+6].ord.to_s(16), raw_rom[addr+7].ord.to_s(16)).to_i(16),
+                    none: little_endian_bin(raw_rom[addr+8].ord.to_s(16), raw_rom[addr+9].ord.to_s(16)).to_i(16),
+                    irq: little_endian_bin(raw_rom[addr+10].ord.to_s(16), raw_rom[addr+11].ord.to_s(16)).to_i(16)
                 }
             end
 
             # Ricoh 6502
             def emulation_mode_vectors(raw_rom, addr)
                 {
-                    cop: little_endian_bin(raw_rom[addr+16].ord.to_s(16), raw_rom[addr+17].ord.to_s(16)),
-                    none: little_endian_bin(raw_rom[addr+18].ord.to_s(16), raw_rom[addr+19].ord.to_s(16)),
-                    abort: little_endian_bin(raw_rom[addr+20].ord.to_s(16), raw_rom[addr+21].ord.to_s(16)),
-                    nmi: little_endian_bin(raw_rom[addr+22].ord.to_s(16), raw_rom[addr+23].ord.to_s(16)),
-                    reset: little_endian_bin(raw_rom[addr+24].ord.to_s(16), raw_rom[addr+25].ord.to_s(16)),
-                    irq_brk: little_endian_bin(raw_rom[addr+26].ord.to_s(16), raw_rom[addr+27].ord.to_s(16))
+                    cop: little_endian_bin(raw_rom[addr+16].ord.to_s(16), raw_rom[addr+17].ord.to_s(16)).to_i(16),
+                    none: little_endian_bin(raw_rom[addr+18].ord.to_s(16), raw_rom[addr+19].ord.to_s(16)).to_i(16),
+                    abort: little_endian_bin(raw_rom[addr+20].ord.to_s(16), raw_rom[addr+21].ord.to_s(16)).to_i(16),
+                    nmi: little_endian_bin(raw_rom[addr+22].ord.to_s(16), raw_rom[addr+23].ord.to_s(16)).to_i(16),
+                    reset: little_endian_bin(raw_rom[addr+24].ord.to_s(16), raw_rom[addr+25].ord.to_s(16)).to_i(16),
+                    irq_brk: little_endian_bin(raw_rom[addr+26].ord.to_s(16), raw_rom[addr+27].ord.to_s(16)).to_i(16)
                 }
             end
         end

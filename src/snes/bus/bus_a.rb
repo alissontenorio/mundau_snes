@@ -1,3 +1,5 @@
+require 'singleton'
+
 '''
 +----------------------+                     +--------------------+
 |    Game Cartridge    |                     |                    |
@@ -31,7 +33,8 @@ module Snes
         # In case of spreading over more than 2 banks, it is necessary to use more than 2 channels or transfer twice
         # One A-Bus address basically is increased every time 1 byte of data is transferred. However, it can be
         # decreased or fixed depending on the settings (d3 and d4 of register <43X0H>)
-        class BusA < Utils::Singleton
+        class BusA
+            include Singleton
 
         end
     end

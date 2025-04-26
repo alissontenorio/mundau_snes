@@ -152,7 +152,7 @@ module Snes
             end
 
             def access_ram(bank, offset, operation, value)
-                $logger.debug("#{__method__}") if @debug
+                $logger.debug("#{__method__}\n") if @debug
 
                 ram_pos = position_in_contiguous_memory(bank, offset, 0x7E, 0x0, 0x10_000)
 
@@ -164,7 +164,7 @@ module Snes
             end
 
             def access_low_ram(bank, offset, operation, value)
-                $logger.debug("#{__method__}") if @debug
+                $logger.debug("#{__method__}\n") if @debug
 
                 if operation == :read
                     @ram[offset]
@@ -174,11 +174,11 @@ module Snes
             end
 
             def access_controller(bank, offset, operation, value)
-                $logger.debug("#{__method__}") if @debug
+                $logger.debug("#{__method__}\n") if @debug
             end
 
             def access_internal_cpu(bank, offset, operation, value)
-                $logger.debug("#{__method__}") if @debug
+                $logger.debug("#{__method__} . Register: #{@internal_cpu_registers.address_to_symbol(offset).to_s}\n") if @debug
                 if operation == :read
                     @internal_cpu_registers.read(offset)
                 elsif operation == :write
@@ -187,11 +187,11 @@ module Snes
             end
 
             def access_dma(bank, offset, operation, value)
-                $logger.debug("#{__method__}") if @debug
+                $logger.debug("#{__method__}\n") if @debug
             end
 
             def access_rom(bank, offset, operation, value)
-                $logger.debug("#{__method__}") if @debug
+                $logger.debug("#{__method__}\n") if @debug
                 rom_addr = rom_address(bank, offset)
                 # $logger.debug("#{rom_addr.to_s(16)}") if @debug
 
@@ -199,11 +199,11 @@ module Snes
             end
 
             def access_ppu(bank, offset, operation, value)
-                $logger.debug("#{__method__}") if @debug
+                $logger.debug("#{__method__}\n") if @debug
             end
 
             def access_apu(bank, offset, operation, value)
-                $logger.debug("#{__method__}") if @debug
+                $logger.debug("#{__method__}\n") if @debug
             end
 
             # Convert the Snes address to the ROM address

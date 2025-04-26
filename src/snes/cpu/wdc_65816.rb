@@ -24,7 +24,7 @@ module Snes
             # private_class_method :new
             # def self.instance; @instance end
 
-            attr_accessor :a, :x, :y, :pc, :sp, :p, :dp, :dbr, :pbr
+            attr_accessor :a, :x, :y, :pc, :sp, :p, :dp, :dbr, :pbr, :cycles, :emulation_mode
 
             def setup(memory, reset_addr, debug=false)
                 @debug = debug
@@ -127,30 +127,36 @@ module Snes
                 puts ""
             end
 
+            def get_opcode_addr
+                emulation_mode? ? @pc : ((@pbr << 16) + @pc)
+            end
 
-            def fetch_decode_execute
-                $logger.debug("--------------------------") if @debug
-                $logger.debug("Fetch decode execute start") if @debug
-                @cycles = 0     # Clear cycles
-                @pc &= 0xFFFF   # If PC exceeeds FFFF
+            def read_opcode(opcode_addr)
+                @memory.access(opcode_addr, :read)
+            end
 
-                opcode_addr = emulation_mode? ? @pc : ((@pbr << 16) + @pc)
-                opcode = @memory.access(opcode_addr, :read)
+            def get_opcode_data(opcode)
                 opcode_data = @opcodes_table[opcode] # 1 cycle for fetching the opcode
                 raise NotImplementedError, "Opcode 0x%02X not implemented" % opcode unless opcode_data
                 puts opcode_data
+                # opcode_something = opcode_data.disassemble
                 handler = opcode_data.handler
+                $logger.debug("0x#{opcode.to_s(16)} - Operation #{handler}") if @debug
+                # $logger.debug("Operation #{handler} : #{@pc.to_s(16)}") if @debug
                 base_cycles = opcode_data.cycles
-                $logger.debug("#{handler} : #{@pc.to_s(16)}") if @debug
-                increment_pc
+                [handler, base_cycles]
+            end
 
+            def fetch_decode_execute
+                @cycles = 0     # Clear cycles
+                @pc &= 0xFFFF   # If PC exceeeds FFFF
+
+                opcode_addr = get_opcode_addr
+                opcode = read_opcode(opcode_addr)
+                handler, base_cycles = get_opcode_data(opcode)
+                increment_pc! # Because of read_opcode
                 @cycles += base_cycles
-
-                result = send(handler)
-
-                puts
-                $logger.debug(" ") if @debug
-                $logger.debug(" ") if @debug
+                result = send(handler) # Call Instruction
             end
 
             def increment_cycles_if_page_crossing(old_pc)
@@ -165,9 +171,8 @@ module Snes
 
             def read_16
                 lo = read_8(full_pc)
-                increment_pc
-                hi = read_8(full_pc)
-                increment_pc
+                pbr, pc = increment_pc
+                hi = read_8(full_pc(pbr, pc))
                 (hi << 8) | lo # Little Endian Word Fetch from Instruction Stream
             end
 
@@ -256,7 +261,16 @@ module Snes
                 end
             end
 
-            def increment_pc(bytes = 1)
+            def increment_pc(bytes = 1, pc = @pc, pbr = @pbr)
+                pc += bytes
+                if pc > 0xFFFF
+                    pc &= 0xFFFF
+                    pbr = (pbr + 1) & 0xFF if native_mode?
+                end
+                [pbr, pc]
+            end
+
+            def increment_pc!(bytes = 1)
                 old_pc = @pc
                 @pc += bytes
                 increment_cycles_if_page_crossing(old_pc)
@@ -266,8 +280,8 @@ module Snes
                 end
             end
 
-            def full_pc
-                (@pbr << 16) | @pc
+            def full_pc(pbr = @pbr, pc = @pc)
+                (pbr << 16) | pc
             end
 
             # Instructions That Could Cross Page Boundaries:

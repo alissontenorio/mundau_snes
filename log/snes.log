@@ -1,142 +1,237 @@
-# Logfile created on 2025-04-26 02:40:25 -0300 by logger.rb/v1.5.0
-DEBUG -- : #<CPU PBR=00 PC=8000 A=00 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=0 P=00110100 N=0 V=0 M=1 X=1 D=0 I=1 Z=0 C=0>
+# Logfile created on 2025-04-26 18:30:12 -0300 by logger.rb/v1.5.0
 DEBUG -- : --------------------------
 DEBUG -- : Fetch decode execute start
+DEBUG -- : #<CPU PBR=00 PC=8000 A=00 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=0 P=00110100 N=0 V=0 M=1 X=1 D=0 I=1 Z=0 C=0>
 DEBUG -- :  
 DEBUG -- : Bank System - read address 0x8000
 DEBUG -- : access_rom
-DEBUG -- : sei : 8000
+
+DEBUG -- : 0x78 - Operation sei
+DEBUG -- : bytes - 1 
+DEBUG -- : before pc - 32768 
+DEBUG -- : after pc - 32769 
+DEBUG -- : Cycles: 2 
 DEBUG -- :  
-DEBUG -- :  
-DEBUG -- : #<CPU PBR=00 PC=8001 A=00 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=2 P=00110100 N=0 V=0 M=1 X=1 D=0 I=1 Z=0 C=0>
 DEBUG -- : --------------------------
 DEBUG -- : Fetch decode execute start
+DEBUG -- : #<CPU PBR=00 PC=8001 A=00 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=2 P=00110100 N=0 V=0 M=1 X=1 D=0 I=1 Z=0 C=0>
 DEBUG -- :  
 DEBUG -- : Bank System - read address 0x8001
 DEBUG -- : access_rom
-DEBUG -- : stz_absolute : 8001
+
+DEBUG -- : 0x9c - Operation stz_abs
+DEBUG -- : bytes - 1 
+DEBUG -- : before pc - 32769 
+DEBUG -- : after pc - 32770 
 DEBUG -- :  
 DEBUG -- : Bank System - read address 0x8002
 DEBUG -- : access_rom
+
 DEBUG -- :  
 DEBUG -- : Bank System - read address 0x8003
 DEBUG -- : access_rom
+
+DEBUG -- : bytes - 2 
+DEBUG -- : before pc - 32770 
+DEBUG -- : after pc - 32772 
 DEBUG -- :  
 DEBUG -- : Bank System - write address 0x4200
-DEBUG -- : access_internal_cpu
+DEBUG -- : access_internal_cpu . Register: nmitimen
+
+DEBUG -- : Cycles: 4 
 DEBUG -- :  
-DEBUG -- :  
-DEBUG -- : #<CPU PBR=00 PC=8004 A=00 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=4 P=00110100 N=0 V=0 M=1 X=1 D=0 I=1 Z=0 C=0>
 DEBUG -- : --------------------------
 DEBUG -- : Fetch decode execute start
+DEBUG -- : #<CPU PBR=00 PC=8004 A=00 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=4 P=00110100 N=0 V=0 M=1 X=1 D=0 I=1 Z=0 C=0>
 DEBUG -- :  
 DEBUG -- : Bank System - read address 0x8004
 DEBUG -- : access_rom
-DEBUG -- : stz_absolute : 8004
+
+DEBUG -- : 0x9c - Operation stz_abs
+DEBUG -- : bytes - 1 
+DEBUG -- : before pc - 32772 
+DEBUG -- : after pc - 32773 
 DEBUG -- :  
 DEBUG -- : Bank System - read address 0x8005
 DEBUG -- : access_rom
+
 DEBUG -- :  
 DEBUG -- : Bank System - read address 0x8006
 DEBUG -- : access_rom
+
+DEBUG -- : bytes - 2 
+DEBUG -- : before pc - 32773 
+DEBUG -- : after pc - 32775 
 DEBUG -- :  
 DEBUG -- : Bank System - write address 0x420C
-DEBUG -- : access_internal_cpu
+DEBUG -- : access_internal_cpu . Register: hdmaen
+
+DEBUG -- : Cycles: 4 
 DEBUG -- :  
-DEBUG -- :  
-DEBUG -- : #<CPU PBR=00 PC=8007 A=00 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=4 P=00110100 N=0 V=0 M=1 X=1 D=0 I=1 Z=0 C=0>
 DEBUG -- : --------------------------
 DEBUG -- : Fetch decode execute start
+DEBUG -- : #<CPU PBR=00 PC=8007 A=00 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=4 P=00110100 N=0 V=0 M=1 X=1 D=0 I=1 Z=0 C=0>
 DEBUG -- :  
 DEBUG -- : Bank System - read address 0x8007
 DEBUG -- : access_rom
-DEBUG -- : stz_absolute : 8007
+
+DEBUG -- : 0x9c - Operation stz_abs
+DEBUG -- : bytes - 1 
+DEBUG -- : before pc - 32775 
+DEBUG -- : after pc - 32776 
 DEBUG -- :  
 DEBUG -- : Bank System - read address 0x8008
 DEBUG -- : access_rom
+
 DEBUG -- :  
 DEBUG -- : Bank System - read address 0x8009
 DEBUG -- : access_rom
+
+DEBUG -- : bytes - 2 
+DEBUG -- : before pc - 32776 
+DEBUG -- : after pc - 32778 
 DEBUG -- :  
 DEBUG -- : Bank System - write address 0x420B
-DEBUG -- : access_internal_cpu
+DEBUG -- : access_internal_cpu . Register: mdmaen
+
+DEBUG -- : Cycles: 4 
 DEBUG -- :  
-DEBUG -- :  
-DEBUG -- : #<CPU PBR=00 PC=800A A=00 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=4 P=00110100 N=0 V=0 M=1 X=1 D=0 I=1 Z=0 C=0>
 DEBUG -- : --------------------------
 DEBUG -- : Fetch decode execute start
+DEBUG -- : #<CPU PBR=00 PC=800A A=00 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=4 P=00110100 N=0 V=0 M=1 X=1 D=0 I=1 Z=0 C=0>
 DEBUG -- :  
 DEBUG -- : Bank System - read address 0x800A
 DEBUG -- : access_rom
-DEBUG -- : stz_absolute : 800a
+
+DEBUG -- : 0x9c - Operation stz_abs
+DEBUG -- : bytes - 1 
+DEBUG -- : before pc - 32778 
+DEBUG -- : after pc - 32779 
 DEBUG -- :  
 DEBUG -- : Bank System - read address 0x800B
 DEBUG -- : access_rom
+
 DEBUG -- :  
 DEBUG -- : Bank System - read address 0x800C
 DEBUG -- : access_rom
+
+DEBUG -- : bytes - 2 
+DEBUG -- : before pc - 32779 
+DEBUG -- : after pc - 32781 
 DEBUG -- :  
 DEBUG -- : Bank System - write address 0x2140
 DEBUG -- : access_ppu
+
+DEBUG -- : Cycles: 4 
 DEBUG -- :  
-DEBUG -- :  
-DEBUG -- : #<CPU PBR=00 PC=800D A=00 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=4 P=00110100 N=0 V=0 M=1 X=1 D=0 I=1 Z=0 C=0>
 DEBUG -- : --------------------------
 DEBUG -- : Fetch decode execute start
+DEBUG -- : #<CPU PBR=00 PC=800D A=00 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=4 P=00110100 N=0 V=0 M=1 X=1 D=0 I=1 Z=0 C=0>
 DEBUG -- :  
 DEBUG -- : Bank System - read address 0x800D
 DEBUG -- : access_rom
-DEBUG -- : stz_absolute : 800d
+
+DEBUG -- : 0x9c - Operation stz_abs
+DEBUG -- : bytes - 1 
+DEBUG -- : before pc - 32781 
+DEBUG -- : after pc - 32782 
 DEBUG -- :  
 DEBUG -- : Bank System - read address 0x800E
 DEBUG -- : access_rom
+
 DEBUG -- :  
 DEBUG -- : Bank System - read address 0x800F
 DEBUG -- : access_rom
+
+DEBUG -- : bytes - 2 
+DEBUG -- : before pc - 32782 
+DEBUG -- : after pc - 32784 
 DEBUG -- :  
 DEBUG -- : Bank System - write address 0x2141
 DEBUG -- : access_ppu
+
+DEBUG -- : Cycles: 4 
 DEBUG -- :  
-DEBUG -- :  
-DEBUG -- : #<CPU PBR=00 PC=8010 A=00 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=4 P=00110100 N=0 V=0 M=1 X=1 D=0 I=1 Z=0 C=0>
 DEBUG -- : --------------------------
 DEBUG -- : Fetch decode execute start
+DEBUG -- : #<CPU PBR=00 PC=8010 A=00 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=4 P=00110100 N=0 V=0 M=1 X=1 D=0 I=1 Z=0 C=0>
 DEBUG -- :  
 DEBUG -- : Bank System - read address 0x8010
 DEBUG -- : access_rom
-DEBUG -- : stz_absolute : 8010
+
+DEBUG -- : 0x9c - Operation stz_abs
+DEBUG -- : bytes - 1 
+DEBUG -- : before pc - 32784 
+DEBUG -- : after pc - 32785 
 DEBUG -- :  
 DEBUG -- : Bank System - read address 0x8011
 DEBUG -- : access_rom
+
 DEBUG -- :  
 DEBUG -- : Bank System - read address 0x8012
 DEBUG -- : access_rom
+
+DEBUG -- : bytes - 2 
+DEBUG -- : before pc - 32785 
+DEBUG -- : after pc - 32787 
 DEBUG -- :  
 DEBUG -- : Bank System - write address 0x2142
 DEBUG -- : access_ppu
+
+DEBUG -- : Cycles: 4 
 DEBUG -- :  
-DEBUG -- :  
-DEBUG -- : #<CPU PBR=00 PC=8013 A=00 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=4 P=00110100 N=0 V=0 M=1 X=1 D=0 I=1 Z=0 C=0>
 DEBUG -- : --------------------------
 DEBUG -- : Fetch decode execute start
+DEBUG -- : #<CPU PBR=00 PC=8013 A=00 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=4 P=00110100 N=0 V=0 M=1 X=1 D=0 I=1 Z=0 C=0>
 DEBUG -- :  
 DEBUG -- : Bank System - read address 0x8013
 DEBUG -- : access_rom
-DEBUG -- : stz_absolute : 8013
+
+DEBUG -- : 0x9c - Operation stz_abs
+DEBUG -- : bytes - 1 
+DEBUG -- : before pc - 32787 
+DEBUG -- : after pc - 32788 
 DEBUG -- :  
 DEBUG -- : Bank System - read address 0x8014
 DEBUG -- : access_rom
+
 DEBUG -- :  
 DEBUG -- : Bank System - read address 0x8015
 DEBUG -- : access_rom
+
+DEBUG -- : bytes - 2 
+DEBUG -- : before pc - 32788 
+DEBUG -- : after pc - 32790 
 DEBUG -- :  
 DEBUG -- : Bank System - write address 0x2143
 DEBUG -- : access_ppu
+
+DEBUG -- : Cycles: 4 
 DEBUG -- :  
-DEBUG -- :  
-DEBUG -- : #<CPU PBR=00 PC=8016 A=00 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=4 P=00110100 N=0 V=0 M=1 X=1 D=0 I=1 Z=0 C=0>
 DEBUG -- : --------------------------
 DEBUG -- : Fetch decode execute start
+DEBUG -- : #<CPU PBR=00 PC=8016 A=00 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=4 P=00110100 N=0 V=0 M=1 X=1 D=0 I=1 Z=0 C=0>
 DEBUG -- :  
 DEBUG -- : Bank System - read address 0x8016
 DEBUG -- : access_rom
+
+DEBUG -- : 0xa9 - Operation lda_immediate
+DEBUG -- : bytes - 1 
+DEBUG -- : before pc - 32790 
+DEBUG -- : after pc - 32791 
+DEBUG -- :  
+DEBUG -- : Bank System - read address 0x8017
+DEBUG -- : access_rom
+
+DEBUG -- : bytes - 1 
+DEBUG -- : before pc - 32791 
+DEBUG -- : after pc - 32792 
+DEBUG -- : Cycles: 2 
+DEBUG -- :  
+DEBUG -- : --------------------------
+DEBUG -- : Fetch decode execute start
+DEBUG -- : #<CPU PBR=00 PC=8018 A=80 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=2 P=10110100 N=1 V=0 M=1 X=1 D=0 I=1 Z=0 C=0>
+DEBUG -- :  
+DEBUG -- : Bank System - read address 0x8018
+DEBUG -- : access_rom
+

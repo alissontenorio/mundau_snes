@@ -52,8 +52,13 @@ module Snes
             test_counter = 0
             while true
                 puts WDC_CORE.inspect
+                $logger.debug("--------------------------") if @debug
+                $logger.debug("Fetch decode execute start") if @debug
                 $logger.debug("#{WDC_CORE.inspect}") if @debug
                 WDC_CORE.fetch_decode_execute
+                $logger.debug("Cycles: #{WDC_CORE.cycles} ") if @debug
+                puts
+                $logger.debug(" ") if @debug
                 $stdout.flush
                 sleep(1)
                 return if test_counter > 4

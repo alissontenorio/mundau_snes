@@ -3,30 +3,40 @@ module Snes
         module Instructions
             class AddressingMode
                 ABSOLUTE = :absolute
-                ABSOLUTE_INDEXED_LONG = :absolute_indexed_long
+                ABSOLUTE_LONG = :absolute_long
                 ABSOLUTE_INDEXED_X = :absolute_indexed_x
                 ABSOLUTE_INDEXED_Y = :absolute_indexed_y
+                ABSOLUTE_LONG_INDEXED_X = :absolute_long_indexed_x
+                ABSOLUTE_INDEXED_INDIRECT = :absolute_indexed_indirect
                 ABSOLUTE_INDIRECT = :absolute_indirect
                 ABSOLUTE_INDIRECT_LONG = :absolute_indirect_long
-                ABSOLUTE_INDEXED_INDIRECT = :absolute_indexed_indirect
                 BLOCK_MOVE = :block_move
-                DIRECT = :direct
-                DIRECT_INDEXED_X = :direct_indexed_x
-                DIRECT_INDEXED_Y = :direct_indexed_y
-                DIRECT_INDEXED_INDIRECT = :direct_indexed_indirect
-                DIRECT_INDIRECT = :direct_indirect
-                DIRECT_INDIRECT_INDEXED = :direct_indirect_indexed
-                DIRECT_INDIRECT_INDEXED_LONG = :direct_indirect_indexed_long
-                DIRECT_INDIRECT_LONG = :direct_indirect_long
+                DIRECT_PAGE = :direct_page
+                DIRECT_PAGE_INDEXED_X = :direct_indexed_x
+                DIRECT_PAGE_INDEXED_Y = :direct_indexed_y
+                DIRECT_PAGE_INDEXED_INDIRECT_X = :direct_page_indexed_indirect_x
+                DIRECT_PAGE_INDIRECT = :direct_page_indirect
+                DIRECT_PAGE_INDIRECT_LONG = :direct_page_indirect_long
+                DIRECT_PAGE_INDIRECT_INDEXED_Y = :direct_page_indirect_indexed_y
+                DIRECT_PAGE_INDIRECT_LONG_INDEXED_Y = :direct_page_indirect_long_indexed_y
+                IMMEDIATE = :immediate
                 IMPLIED = :implied
-                IMPLIED_ACCUMULATOR = :implied_accumulator
-                IMMEDIATE_8BIT = :immediate_8bit
-                IMMEDIATE_INDEX_FLAG = :immediate_index_flag
-                IMMEDIATE_MEMORY_FLAG = :immediate_memory_flag
-                RELATIVE = :relative
-                RELATIVE_LONG = :relative_long
+                PROGRAM_COUNTER_RELATIVE = :program_counter_relative
+                PROGRAM_COUNTER_RELATIVE_LONG = :program_counter_relative_long
+                STACK_ABSOLUTE = :stack_absolute
+                STACK_DIRECT_PAGE_INDIRECT = :stack_direct_page_indirect
+                STACK_INTERRUPT = :stack_interrupt
+                STACK_PROGRAM_COUNTER_RELATIVE = :stack_program_counter_relative
+                STACK_PULL = :stack_pull
+                STACK_PUSH = :stack_push
+                STACK_RTI = :stack_rti
+                STACK_RTL = :stack_rtl
+                STACK_RTS = :stack_rts
                 STACK_RELATIVE = :stack_relative
-                STACK_RELATIVE_INDIRECT_INDEXED = :stack_relative_indirect_indexed
+                STACK_RELATIVE_INDIRECT_INDEXED_Y = :stack_relative_indirect_indexed_y
+
+                # Documented but needs to check
+                ACCUMULATOR = :accumulator
             end
         end
     end

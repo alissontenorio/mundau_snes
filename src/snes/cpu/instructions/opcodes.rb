@@ -29,10 +29,46 @@ module Snes
                 Opcode = Struct.new(:handler, :description, :addressing_mode, :p_flags, :bytes_used, :cycles)
 
                 TABLE = {
+                    # System Control
                     0x78 => Opcode.new(:sei, 'Set Interrupt Disable Flag', AddressingMode::IMPLIED, 0b0000_0100, 1, 2),
-                    0x64 => Opcode.new(:stz_dp, 'Store Zero to Memory', AddressingMode::DIRECT, 0b0000_0000, 2, 3),
-                    0x9C => Opcode.new(:stz_absolute, 'Store Zero to Memory', AddressingMode::ABSOLUTE, 0b0000_0000, 3, 4),
-                    0xE8 => Opcode.new(:inx, 'Increment X register', AddressingMode::IMPLIED, 0b1000_0010, 1, 2),
+
+                    # Data Movement
+                    # 0x64 => Opcode.new(:stz_dp, 'Store Zero to Memory', AddressingMode::DIRECT_PAGE, 0b0000_0000, 2, 3),
+                    0x9C => Opcode.new(:stz_abs, 'Store Zero to Memory', AddressingMode::ABSOLUTE, 0b0000_0000, 3, 4),
+
+                    # 0x8D => Opcode.new(:sta_abs, 'Store Accumulator To Memory', AddressingMode::ABSOLUTE, 0b0000_0000, 3, 4),
+                    # 0x8F => Opcode.new(:sta_abs_long, 'Store Accumulator To Memory', AddressingMode::ABSOLUTE_LONG, 0b0000_0000, 4, 5),
+                    # 0x85 => Opcode.new(:sta_dp, 'Store Accumulator To Memory', AddressingMode::DIRECT_PAGE, 0b0000_0000, 2, 3),
+                    # 0x92 => Opcode.new(:sta_dp_indirect, 'Store Accumulator To Memory', AddressingMode::DIRECT_PAGE_INDIRECT, 0b0000_0000, 2, 5),
+                    # 0x87 => Opcode.new(:sta_dp_indirect_long, 'Store Accumulator To Memory', AddressingMode::DIRECT_PAGE_INDIRECT_LONG, 0b0000_0000, 2, 6),
+                    # 0x9D => Opcode.new(:sta_abs_x, 'Store Accumulator To Memory', AddressingMode::ABSOLUTE_INDEXED_X, 0b0000_0000, 3, 5),
+                    # 0x9F => Opcode.new(:sta_abs_long_x, 'Store Accumulator To Memory', AddressingMode::ABSOLUTE_LONG_INDEXED_X, 0b0000_0000, 4, 5),
+                    # 0x99 => Opcode.new(:sta_abs_y, 'Store Accumulator To Memory', AddressingMode::ABSOLUTE_INDEXED_Y, 0b0000_0000, 3, 5),
+                    # 0x95 => Opcode.new(:sta_dp_x, 'Store Accumulator To Memory', AddressingMode::DIRECT_PAGE_INDEXED_X, 0b0000_0000, 2, 4),
+                    # 0x81 => Opcode.new(:sta_dp_indirect_x, 'Store Accumulator To Memory', AddressingMode::DIRECT_PAGE_INDEXED_INDIRECT_X, 0b0000_0000, 2, 6),
+                    # 0x91 => Opcode.new(:sta_dp_indirect_y, 'Store Accumulator To Memory', AddressingMode::DIRECT_PAGE_INDIRECT_INDEXED_Y, 0b0000_0000, 2, 6),
+                    # 0x97 => Opcode.new(:sta_dp_indirect_long_y, 'Store Accumulator To Memory', AddressingMode::DIRECT_PAGE_INDIRECT_LONG_INDEXED_Y, 0b0000_0000, 2, 6),
+                    # 0x83 => Opcode.new(:sta_sr, 'Store Accumulator To Memory', AddressingMode::STACK_RELATIVE, 0b0000_0000, 2, 4),
+                    # 0x93 => Opcode.new(:sta_sr_indirect_y, 'Store Accumulator To Memory', AddressingMode::STACK_RELATIVE_INDIRECT_INDEXED_Y, 0b0000_0000, 2, 7),
+
+                    0xA9 => Opcode.new(:lda_immediate, 'Load Accumulator from Memory', AddressingMode::IMMEDIATE, 0b1000_0010, 2, 2),
+                    # 0xAD => Opcode.new(:lda_abs, 'Load Accumulator from Memory', AddressingMode::ABSOLUTE, 0b1000_0010, 3, 4),
+                    # 0xAF => Opcode.new(:lda_abs_long, 'Load Accumulator from Memory', AddressingMode::ABSOLUTE_LONG, 0b1000_0010, 4, 5),
+                    # 0xA5 => Opcode.new(:lda_dp, 'Load Accumulator from Memory', AddressingMode::DIRECT_PAGE, 0b1000_0010, 2, 3),
+                    # 0xB2 => Opcode.new(:lda_dp_indirect, 'Load Accumulator from Memory', AddressingMode::DIRECT_PAGE_INDIRECT, 0b1000_0010, 2, 5),
+                    # 0xA7 => Opcode.new(:lda_dp_indirect_long, 'Load Accumulator from Memory', AddressingMode::DIRECT_PAGE_INDIRECT_LONG, 0b1000_0010, 2, 6),
+                    # 0xBD => Opcode.new(:lda_abs_x, 'Load Accumulator from Memory', AddressingMode::ABSOLUTE_INDEXED_X, 0b1000_0010, 3, 4),
+                    # 0xBF => Opcode.new(:lda_abs_long_x, 'Load Accumulator from Memory', AddressingMode::ABSOLUTE_LONG_INDEXED_X, 0b1000_0010, 4, 5),
+                    # 0xB9 => Opcode.new(:lda_abs_y, 'Load Accumulator from Memory', AddressingMode::ABSOLUTE_INDEXED_Y, 0b1000_0010, 3, 4),
+                    # 0xB5 => Opcode.new(:lda_dp_x, 'Load Accumulator from Memory', AddressingMode::DIRECT_PAGE_INDEXED_X, 0b1000_0010, 2, 4),
+                    # 0xA1 => Opcode.new(:lda_dp_indirect_x, 'Load Accumulator from Memory', AddressingMode::DIRECT_PAGE_INDEXED_INDIRECT_X, 0b1000_0010, 2, 6),
+                    # 0xB1 => Opcode.new(:lda_dp_indirect_y, 'Load Accumulator from Memory', AddressingMode::DIRECT_PAGE_INDIRECT_INDEXED_Y, 0b1000_0010, 2, 5),
+                    # 0xB7 => Opcode.new(:lda_dp_indirect_long_y, 'Load Accumulator from Memory', AddressingMode::DIRECT_PAGE_INDIRECT_LONG_INDEXED_Y, 0b1000_0010, 2, 6),
+                    # 0xA3 => Opcode.new(:lda_sr, 'Load Accumulator from Memory', AddressingMode::STACK_RELATIVE, 0b1000_0010, 2, 4),
+                    # 0xB3 => Opcode.new(:lda_sr_indirect_y, 'Load Accumulator from Memory', AddressingMode::STACK_RELATIVE_INDIRECT_INDEXED_Y, 0b1000_0010, 2, 7),
+
+                    # Arithmetic
+                    # 0xE8 => Opcode.new(:inx, 'Increment X register', AddressingMode::IMPLIED, 0b1000_0010, 1, 2),
                 }
             end
         end

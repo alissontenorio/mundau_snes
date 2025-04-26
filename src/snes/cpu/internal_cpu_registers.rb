@@ -97,6 +97,10 @@ module Snes
                     raise "Write access to invalid or read-only address: 0x#{address.to_s(16).upcase}"
                 end
             end
+
+            def address_to_symbol(address)
+                WRITE_MAP[address] || READ_MAP[address] || :unknown
+            end
         end
     end
 end

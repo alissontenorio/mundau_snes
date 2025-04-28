@@ -1,9 +1,3 @@
-class CartridgeHeaderTypeNotIdentifiedError < StandardError
-    def initialize(msg="Couldn't identify the cartridge type (Hirom, Exrom, etc)")
-        super
-    end
-end
-
 class AddressOutOfRangeError < StandardError
     def initialize(bank, offset)
         super("Unknown offset for bank #{bank.to_s(16)}:#{offset.to_s(16)}")

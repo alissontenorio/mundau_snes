@@ -1,4 +1,4 @@
-require_relative '../../exceptions'
+require_relative '../../exceptions/cpu_exceptions'
 require 'logger'
 require_relative 'memory_range'
 
@@ -15,12 +15,17 @@ require_relative 'memory_range'
 module Snes
     module Memory
         class Mapper
-            def initialize(cartridge, ram, sram, internal_cpu_registers, debug = false)
+            def initialize(cartridge, ram, sram, bus, debug = false)
                 @cartridge_type = cartridge.cartridge_type_to_sym
                 @rom = cartridge.rom_raw
                 @ram = ram
                 @sram = sram
+                @bus = bus
                 @debug = debug
+                @internal_cpu_registers = nil
+            end
+
+            def set_internal_cpu_registers(internal_cpu_registers)
                 @internal_cpu_registers = internal_cpu_registers
             end
 
@@ -200,6 +205,14 @@ module Snes
 
             def access_ppu(bank, offset, operation, value)
                 $logger.debug("#{__method__}\n") if @debug
+
+                if operation == :read
+                    @bus.read_ppu(offset)
+                elsif operation == :write
+                    @bus.write_ppu(offset, value)
+                else
+                    raise "Unknown operation: #{operation}"
+                end
             end
 
             def access_apu(bank, offset, operation, value)

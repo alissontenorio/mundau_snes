@@ -4,7 +4,7 @@ require_relative 'internal_cpu_registers'
 module Snes
     module CPU
         class WDC65816
-            include Singleton
+            # include Singleton
 
             include Snes::CPU::Instructions::Opcodes
 
@@ -16,9 +16,6 @@ module Snes
             include Snes::CPU::Instructions::SubroutineCalls
             include Snes::CPU::Instructions::SystemControl
 
-
-            InternalCPU_Registers = Snes::CPU::InternalCPURegisters.instance
-
             # # Singleton stuff
             # @instance = new
             # private_class_method :new
@@ -26,9 +23,10 @@ module Snes
 
             attr_accessor :a, :x, :y, :pc, :sp, :p, :dp, :dbr, :pbr, :cycles, :emulation_mode
 
-            def setup(memory, reset_addr, debug=false)
+            def setup(memory, reset_addr, internal_cpu_registers, debug=false)
                 @debug = debug
                 @memory = memory
+                @internal_cpu_registers = internal_cpu_registers
 
                 @opcodes_table = Snes::CPU::Instructions::Opcodes::TABLE
 
@@ -116,7 +114,7 @@ module Snes
                 base_bytes_used = opcode_data.bytes_used
                 base_cycles = opcode_data.cycles
 
-                puts opcode_data
+                puts opcode_data if @debug
 
                 # puts "Handler: #{handler}"
                 # puts "Description: #{description}"
@@ -131,14 +129,10 @@ module Snes
                 emulation_mode? ? @pc : ((@pbr << 16) + @pc)
             end
 
-            def read_opcode(opcode_addr)
-                @memory.access(opcode_addr, :read)
-            end
-
             def get_opcode_data(opcode)
                 opcode_data = @opcodes_table[opcode] # 1 cycle for fetching the opcode
                 raise NotImplementedError, "Opcode 0x%02X not implemented" % opcode unless opcode_data
-                puts opcode_data
+                puts "0x#{opcode.to_s(16).upcase} - #{opcode_data}" if @debug
                 # opcode_something = opcode_data.disassemble
                 handler = opcode_data.handler
                 $logger.debug("0x#{opcode.to_s(16)} - Operation #{handler}") if @debug
@@ -152,7 +146,7 @@ module Snes
                 @pc &= 0xFFFF   # If PC exceeeds FFFF
 
                 opcode_addr = get_opcode_addr
-                opcode = read_opcode(opcode_addr)
+                opcode = read_8(opcode_addr)
                 handler, base_cycles = get_opcode_data(opcode)
                 increment_pc! # Because of read_opcode
                 @cycles += base_cycles
@@ -166,7 +160,9 @@ module Snes
             end
 
             def read_8(address = full_pc)
-                @memory.access(address & 0xFFFFFF, :read)
+                value = @memory.access(address & 0xFFFFFF, :read)
+                puts "Reading 0x%02X from 0x%06X" % [value, address] if @debug
+                value
             end
 
             def read_16
@@ -177,12 +173,16 @@ module Snes
             end
 
             def write_8(address, value)
+                puts "Writing 0x%02X to 0x%06X" % [value, address] if @debug
                 @memory.access(address & 0xFFFFFF, :write, value & 0xFF)
             end
 
-            def write_16(address, value)
-                write_8(address, value & 0xFF)
-                write_8(address + 1, (value >> 8) & 0xFF)
+            # Given a value example 0x4231
+            # value & 0xFF -> 31
+            # (value >> 8) & 0xFF -> 42
+            def write_16(address, value) #Works in Low Endian
+                write_8(address, value & 0xFF) # Low Byte
+                write_8(address + 1, (value >> 8) & 0xFF) # High Byte
             end
 
             # Effective address using DBR (for Absolute)
@@ -234,8 +234,9 @@ module Snes
             end
 
             def inspect
-                "#<CPU PBR=%02X PC=%04X A=%02X X=%02X Y=%02X SP=%04X DP=%02X DBR=%02X Emulation=%s Cycles=%s P=%08b %s>" %
-                    [@pbr, @pc, @a, @x, @y, @sp, @dp, @dbr, @emulation_mode, @cycles, @p, WDC65816.debug_format_flags(@p)]
+                "CPU PBR=%02X PC=%04X A=%02X X=%02X Y=%02X SP=%04X DP=%02X DBR=%02X Emulation=%s Cycles=%s P - %s" %
+                    # [@pbr, @pc, @a, @x, @y, @sp, @dp, @dbr, @emulation_mode, @cycles, @p, WDC65816.debug_format_flags(@p)]
+                    [@pbr, @pc, @a, @x, @y, @sp, @dp, @dbr, @emulation_mode, @cycles, WDC65816.debug_format_flags(@p)]
             end
 
             def status_p_flag?(symbol)

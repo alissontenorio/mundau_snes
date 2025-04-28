@@ -1,0 +1,17 @@
+def lda_immediate
+    if status_p_flag?(:m) # 8-bit - emulation
+        value = read_8
+        increment_pc!
+        @a = (@a & 0xFF00) | value # Store value into the low byte of A, keeping high byte intact
+        set_p_flag(:n, (value & 0x80) != 0)
+    else # 16-bit - native
+        value = read_16
+        increment_pc!(2)
+        @a = value
+        set_p_flag(:n, (value & 0x8000) != 0)
+        @cycles += 1
+    end
+
+    # Update Zero (Z) flag: set if value is zero
+    set_p_flag(:z, value == 0)
+end

@@ -1,7 +1,7 @@
 module Snes
     module CPU
         class InternalCPURegisters
-            include Singleton
+            # include Singleton
 
             # ==== Writable Registers ====
             attr_accessor :nmitimen   # Interrupt Enable Register         ($4200)

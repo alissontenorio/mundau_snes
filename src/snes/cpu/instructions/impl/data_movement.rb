@@ -10,7 +10,7 @@ module Snes
                 # STX
                 # STY
 
-                def lda_immediate
+                def lda_immediate # 0xA9
                     if status_p_flag?(:m) # 8-bit - emulation
                         value = read_8
                         increment_pc!
@@ -56,7 +56,17 @@ module Snes
                 # end
 
                 def sta_abs
+                    address = read_16  # Fetch 16-bit absolute address
+                    increment_pc!(2)    # Move PC forward by 2 bytes
 
+                    if status_p_flag?(:m) # 8-bit accumulator mode
+                        value = @a & 0x00FF  # Use only the low 8 bits of A
+                        write_8(address, value)
+                    else # 16-bit accumulator mode
+                        value = @a & 0xFFFF  # Use full 16 bits of A
+                        write_16(address, value)
+                        @cycles += 1
+                    end
                 end
 
                 # Push Instructions

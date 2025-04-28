@@ -1,4 +1,4 @@
-require_relative '../../exceptions'
+require_relative '../../exceptions/cpu_exceptions'
 
 module Snes
     module Memory

@@ -26,7 +26,29 @@ module Snes
         module Instructions
             module Opcodes
                 # p_flags -> nvmx_dizc
-                Opcode = Struct.new(:handler, :description, :addressing_mode, :p_flags, :bytes_used, :cycles)
+
+                # Opcode = Struct.new(:handler, :description, :addressing_mode, :p_flags, :bytes_used, :cycles) do
+                #     def inspect
+                #         "#<Opcode handler=#{handler.inspect} description=#{description.inspect} addressing_mode=#{addressing_mode.inspect} p_flags=#{p_flags.inspect} bytes_used=#{bytes_used.inspect} cycles=#{cycles.inspect}>"
+                #     end
+                # end
+
+                class Opcode
+                    attr_accessor :handler, :description, :addressing_mode, :p_flags, :bytes_used, :cycles
+
+                    def initialize(handler, description, addressing_mode, p_flags, bytes_used, cycles)
+                        @handler = handler
+                        @description = description
+                        @addressing_mode = addressing_mode
+                        @p_flags = p_flags
+                        @bytes_used = bytes_used
+                        @cycles = cycles
+                    end
+
+                    def to_s
+                        "Opcode handler=#{handler.inspect} desc=#{description.inspect} mode=#{addressing_mode.inspect} p_flags=#{p_flags.inspect} bytes=#{bytes_used.inspect} cycles=#{cycles.inspect}"
+                    end
+                end
 
                 TABLE = {
                     # System Control
@@ -36,7 +58,7 @@ module Snes
                     # 0x64 => Opcode.new(:stz_dp, 'Store Zero to Memory', AddressingMode::DIRECT_PAGE, 0b0000_0000, 2, 3),
                     0x9C => Opcode.new(:stz_abs, 'Store Zero to Memory', AddressingMode::ABSOLUTE, 0b0000_0000, 3, 4),
 
-                    # 0x8D => Opcode.new(:sta_abs, 'Store Accumulator To Memory', AddressingMode::ABSOLUTE, 0b0000_0000, 3, 4),
+                    0x8D => Opcode.new(:sta_abs, 'Store Accumulator To Memory', AddressingMode::ABSOLUTE, 0b0000_0000, 3, 4),
                     # 0x8F => Opcode.new(:sta_abs_long, 'Store Accumulator To Memory', AddressingMode::ABSOLUTE_LONG, 0b0000_0000, 4, 5),
                     # 0x85 => Opcode.new(:sta_dp, 'Store Accumulator To Memory', AddressingMode::DIRECT_PAGE, 0b0000_0000, 2, 3),
                     # 0x92 => Opcode.new(:sta_dp_indirect, 'Store Accumulator To Memory', AddressingMode::DIRECT_PAGE_INDIRECT, 0b0000_0000, 2, 5),

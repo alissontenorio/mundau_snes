@@ -1,4 +1,4 @@
-# Logfile created on 2025-04-28 01:37:07 -0300 by logger.rb/v1.5.0
+# Logfile created on 2025-04-29 12:35:49 -0300 by logger.rb/v1.5.0
 DEBUG -- : --------------------------
 DEBUG -- : Fetch decode execute start
 DEBUG -- : CPU PBR=00 PC=8000 A=00 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=0 P - N=0 V=0 M=1 X=1 D=0 I=1 Z=0 C=0
@@ -141,68 +141,3 @@ DEBUG -- : access_ppu
 
 DEBUG -- : Cycles: 4 
 DEBUG -- :  
-DEBUG -- : --------------------------
-DEBUG -- : Fetch decode execute start
-DEBUG -- : CPU PBR=00 PC=8013 A=00 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=4 P - N=0 V=0 M=1 X=1 D=0 I=1 Z=0 C=0
-DEBUG -- :  
-DEBUG -- : Bank System - read address 0x8013
-DEBUG -- : access_rom
-
-DEBUG -- : 0x9c - Operation stz_abs
-DEBUG -- :  
-DEBUG -- : Bank System - read address 0x8014
-DEBUG -- : access_rom
-
-DEBUG -- :  
-DEBUG -- : Bank System - read address 0x8015
-DEBUG -- : access_rom
-
-DEBUG -- :  
-DEBUG -- : Bank System - write address 0x2143
-DEBUG -- : access_ppu
-
-DEBUG -- : Cycles: 4 
-DEBUG -- :  
-DEBUG -- : --------------------------
-DEBUG -- : Fetch decode execute start
-DEBUG -- : CPU PBR=00 PC=8016 A=00 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=4 P - N=0 V=0 M=1 X=1 D=0 I=1 Z=0 C=0
-DEBUG -- :  
-DEBUG -- : Bank System - read address 0x8016
-DEBUG -- : access_rom
-
-DEBUG -- : 0xa9 - Operation lda_immediate
-DEBUG -- :  
-DEBUG -- : Bank System - read address 0x8017
-DEBUG -- : access_rom
-
-DEBUG -- : Cycles: 2 
-DEBUG -- :  
-DEBUG -- : --------------------------
-DEBUG -- : Fetch decode execute start
-DEBUG -- : CPU PBR=00 PC=8018 A=80 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=2 P - N=1 V=0 M=1 X=1 D=0 I=1 Z=0 C=0
-DEBUG -- :  
-DEBUG -- : Bank System - read address 0x8018
-DEBUG -- : access_rom
-
-DEBUG -- : 0x8d - Operation sta_abs
-DEBUG -- :  
-DEBUG -- : Bank System - read address 0x8019
-DEBUG -- : access_rom
-
-DEBUG -- :  
-DEBUG -- : Bank System - read address 0x801A
-DEBUG -- : access_rom
-
-DEBUG -- :  
-DEBUG -- : Bank System - write address 0x2100
-DEBUG -- : access_ppu
-
-DEBUG -- : Cycles: 4 
-DEBUG -- :  
-DEBUG -- : --------------------------
-DEBUG -- : Fetch decode execute start
-DEBUG -- : CPU PBR=00 PC=801B A=80 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=4 P - N=1 V=0 M=1 X=1 D=0 I=1 Z=0 C=0
-DEBUG -- :  
-DEBUG -- : Bank System - read address 0x801B
-DEBUG -- : access_rom
-

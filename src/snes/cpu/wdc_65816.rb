@@ -21,7 +21,7 @@ module Snes
             # private_class_method :new
             # def self.instance; @instance end
 
-            attr_accessor :a, :x, :y, :pc, :sp, :p, :dp, :dbr, :pbr, :cycles, :emulation_mode, :opcodes_table
+            attr_accessor :a, :x, :y, :pc, :sp, :p, :dp, :dbr, :pbr, :cycles, :emulation_mode, :opcodes_table, :current_opcode_data
 
             def setup(memory, reset_addr, internal_cpu_registers, debug=false)
                 @debug = debug
@@ -29,6 +29,7 @@ module Snes
                 @internal_cpu_registers = internal_cpu_registers
 
                 @opcodes_table = Snes::CPU::Instructions::Opcodes::TABLE
+                @current_opcode_data = nil
 
                 # Accumulator
                 # 8 or 16 Bit
@@ -106,7 +107,7 @@ module Snes
                 @cycles = 0
             end
 
-            def disassemble(opcode_data)
+            def disassemble(opcode_data = @current_opcode_data)
                 handler = opcode_data.handler
                 description = opcode_data.description
                 addressing_mode = opcode_data.addressing_mode
@@ -130,14 +131,14 @@ module Snes
             end
 
             def get_opcode_data(opcode)
-                opcode_data = @opcodes_table[opcode] # 1 cycle for fetching the opcode
-                raise NotImplementedError, "Opcode 0x%02X not implemented" % opcode unless opcode_data
-                puts "0x#{opcode.to_s(16).upcase} - #{opcode_data}" if @debug
+                @current_opcode_data = @opcodes_table[opcode] # 1 cycle for fetching the opcode
+                raise NotImplementedError, "Opcode 0x%02X not implemented" % opcode unless @current_opcode_data
+                puts "0x#{opcode.to_s(16).upcase} - #{@current_opcode_data}" if @debug
                 # opcode_something = opcode_data.disassemble
-                handler = opcode_data.handler
+                handler = @current_opcode_data.handler
                 $logger.debug("0x#{opcode.to_s(16)} - Operation #{handler}") if @debug
                 # $logger.debug("Operation #{handler} : #{@pc.to_s(16)}") if @debug
-                base_cycles = opcode_data.cycles
+                base_cycles = @current_opcode_data.cycles
                 [handler, base_cycles]
             end
 

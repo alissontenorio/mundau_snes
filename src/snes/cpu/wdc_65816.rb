@@ -21,7 +21,7 @@ module Snes
             # private_class_method :new
             # def self.instance; @instance end
 
-            attr_accessor :a, :x, :y, :pc, :sp, :p, :dp, :dbr, :pbr, :cycles, :emulation_mode
+            attr_accessor :a, :x, :y, :pc, :sp, :p, :dp, :dbr, :pbr, :cycles, :emulation_mode, :opcodes_table
 
             def setup(memory, reset_addr, internal_cpu_registers, debug=false)
                 @debug = debug

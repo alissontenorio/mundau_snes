@@ -17,7 +17,7 @@ module Snes
 
                 @force_blank = false
                 @brightness = 0
-                @frame_buffer = Array.new(256 * 240) { 0 }  # Simple frame buffer (256x240 resolution for NTSC)
+                @frame_buffer = Array.new(256 * 240, [0, 0, 0])   # Simple frame buffer (256x240 resolution for NTSC)
                 @debug = debug
             end
 
@@ -29,7 +29,7 @@ module Snes
             def render_frame
                 # This simulates rendering a frame; in a real implementation, you'd update this buffer
                 # with the actual pixel data from backgrounds, sprites, etc.
-                (0...@frame_buffer.size).each { |i| @frame_buffer[i] = rand(0..255) }  # Simulating random pixels
+                (0...@frame_buffer.size).each { |i| @frame_buffer[i] = [rand(0..255), rand(0..255), rand(0..255)] }  # Simulating random pixels
             end
 
             # Method to read a register's value
@@ -58,7 +58,7 @@ module Snes
 
             def blank_screen
                 # Fill the frame buffer with black (color 0)
-                @frame_buffer.fill(0)
+                @frame_buffer.fill([0, 0, 0])
             end
 
             # This method is called once per PPU cycle to simulate one step of rendering

@@ -65,6 +65,7 @@ module Snes
                     else # 16-bit accumulator mode
                         value = @a & 0xFFFF  # Use full 16 bits of A
                         write_16(address, value)
+
                         @cycles += 1
                     end
                 end

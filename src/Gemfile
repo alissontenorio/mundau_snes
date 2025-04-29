@@ -5,3 +5,8 @@ ruby '3.1.2'
 
 # FXRuby gem for GUI development
 gem 'fxruby'
+
+gem 'opengl'
+gem 'glfw3'
+
+#  gem chunky_png

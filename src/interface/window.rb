@@ -83,6 +83,17 @@ module Interface
 
             return if frame_buffer.nil?
 
+            # if turned_off
+            #     frame_buffer = Array.new(256 * 240, [0, 0, 0])
+            #     (0...frame_buffer.size).each do |i|
+            #         # Black and white
+            #         # x = rand(0..255)
+            #         # frame_buffer[i] = [x, x, x]
+            #         # Color
+            #         frame_buffer[i] = [rand(0..255), rand(0..255), rand(0..255)]
+            #     end
+            # end
+
             # Ensure the frame buffer has the expected size (256 * 240)
             if frame_buffer.nil? || frame_buffer.length != 256 * 240
                 puts "Frame buffer has an unexpected size! #{frame_buffer.length}"
@@ -95,9 +106,9 @@ module Interface
             # Convert the frame buffer into an array of packed RGB values
             (0...@width).each do |x|
                 (0...@height).each do |y|
-                    pixel_value = frame_buffer[y * 256 + x]
+                    pixel_r, pixel_g, pixel_b = frame_buffer[y * 256 + x]
                     # Assuming grayscale pixel value, you can adjust this if you want color
-                    rgb = FXRGB(pixel_value, pixel_value, pixel_value)  # Grayscale
+                    rgb = FXRGB(pixel_r, pixel_g, pixel_b)  # Grayscale
                     pixels << rgb
                 end
             end

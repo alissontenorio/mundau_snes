@@ -40,22 +40,13 @@ end
 
 set_logger
 
-# console = Snes::Console.new(debug=false)
-# console = Snes::Console.new(debug=true)
-
-# console.insert_cartridge(pacman_rom_filepath) # LoRom
-# console.insert_cartridge(dkc2_rom_filepath) # HiRom
-# console.insert_cartridge(tg3000_rom_filepath)
-# console.insert_cartridge(yoshi_rom_filepath)
-# rom_raw = open_rom(zelda_rom_filepath)
-# console.insert_cartridge(chrono_trigger_rom_filepath)
-# console.insert_cartridge(star_ocean_rom_filepath)
-# rom_raw = open_rom(megaman_x_rom_filepath) # lorom fast
-# cartridge = Rom::CartridgeBuilder.new(rom_raw).get_cartridge
-# console.insert_cartridge(cartridge)
-# console.print_cartridge_header
-
+# rom_raw = open_rom(pacman_rom_filepath) # LoRom
+# rom_raw = open_rom(dkc2_rom_filepath) # HiRom
+# rom_raw = open_rom(tg3000_rom_filepath)
+# rom_raw = open_rom(yoshi_rom_filepath)
 rom_raw = open_rom(zelda_rom_filepath)
+
+
 
 debug = true
 
@@ -64,6 +55,7 @@ puts "Turning on the console" if debug
 console = Snes::Console.instance
 console.setup(debug=debug)
 console.insert_cartridge(rom_raw)
+# console.print_cartridge_header
 
 emulator_thread = Thread.new {
     app = Interface::EmulatorApp.new(console)

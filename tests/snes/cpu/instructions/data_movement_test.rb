@@ -9,13 +9,15 @@ module MundauSnesTest
             @@core.increment_pc!
             @@core.cycles += base_cycles
             @@core.define_singleton_method(:read_16) do
-                0x2100  # return mock value
+                0x2100  # return mock value, 2100 - goes to ppu
             end
 
             @@core.a = 0x80
 
+            cpu_test_instance =  self
+
             @@console.bus.define_singleton_method(:write_ppu) do |address, value|
-                nil
+                cpu_test_instance.instance_variable_get(:@writes_8) << value
             end
 
             @@core.sta_abs
@@ -23,7 +25,7 @@ module MundauSnesTest
             assert_equal 'Store Accumulator To Memory', opcode_data.description
             assert_equal 4, @@core.cycles
             assert_equal pc_expected, @@core.pc
-            assert_equal 0x80, @@core.a
+            assert_equal 0x80, @writes_8[0]
         end
 
         def test_sta_abs_16_bits
@@ -38,19 +40,22 @@ module MundauSnesTest
                 0x2100  # return mock value
             end
 
-            @@core.a = 0x80
+            @@core.a = 0x8067 # store 80 to accumulator
+
+            cpu_test_instance =  self
 
             @@console.bus.define_singleton_method(:write_ppu) do |address, value|
-                nil
+                cpu_test_instance.instance_variable_get(:@writes_16) << value
             end
 
-            @@core.p = 0b00010100
+            @@core.p = 0b00010100 # make m = 0
             @@core.sta_abs
 
             assert_equal 'Store Accumulator To Memory', opcode_data.description
             assert_equal 5, @@core.cycles
             assert_equal pc_expected, @@core.pc
-            assert_equal 0x80, @@core.a
+            assert_equal 0x67, @writes_16[0]
+            assert_equal 0x80, @writes_16[1]
         end
     end
 end

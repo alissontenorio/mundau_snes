@@ -34,19 +34,19 @@ module Snes
                 # end
 
                 class Opcode
-                    attr_accessor :handler, :description, :addressing_mode, :p_flags, :bytes_used, :cycles
+                    attr_accessor :handler, :description, :addressing_mode, :p_flags, :base_bytes_used, :base_cycles
 
                     def initialize(handler, description, addressing_mode, p_flags, bytes_used, cycles)
                         @handler = handler
                         @description = description
                         @addressing_mode = addressing_mode
                         @p_flags = p_flags
-                        @bytes_used = bytes_used
-                        @cycles = cycles
+                        @base_bytes_used = bytes_used # base bytes
+                        @base_cycles = cycles
                     end
 
                     def to_s
-                        "Opcode handler=#{handler.inspect} desc=#{description.inspect} mode=#{addressing_mode.inspect} p_flags=#{p_flags.inspect} bytes=#{bytes_used.inspect} cycles=#{cycles.inspect}"
+                        "Opcode handler=#{handler.inspect} desc=#{description.inspect} mode=#{addressing_mode.inspect} p_flags=#{p_flags.inspect} bytes=#{base_bytes_used.inspect} cycles=#{base_cycles.inspect}"
                     end
                 end
 

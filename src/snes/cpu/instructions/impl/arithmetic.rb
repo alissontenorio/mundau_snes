@@ -54,9 +54,7 @@ module Snes
                 #
                 # @return [void]
                 def inx
-                    x_is_8bit = status_p_flag?(:x)
-
-                    if x_is_8bit
+                    if status_p_flag?(:x)
                         @x = (@x + 1) & 0x00FF
                         set_p_flag(:n, (@x & 0x80) != 0)
                     else

@@ -129,7 +129,7 @@ module Snes
             $logger.debug("Fetch decode execute start") if @debug
             $logger.debug("#{core.inspect}") if @debug
             core.fetch_decode_execute
-            $logger.debug("Cycles: #{core.cycles} ") if @debug
+            $logger.debug("Cycles: #{core.base_cycles} ") if @debug
             puts if @debug
             $logger.debug(" ") if @debug
             $stdout.flush if @debug

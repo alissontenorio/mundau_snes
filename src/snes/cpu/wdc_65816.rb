@@ -112,8 +112,8 @@ module Snes
                 description = opcode_data.description
                 addressing_mode = opcode_data.addressing_mode
                 p_flags = opcode_data.p_flags
-                base_bytes_used = opcode_data.bytes_used
-                base_cycles = opcode_data.cycles
+                base_bytes_used = opcode_data.base_bytes_used
+                base_cycles = opcode_data.base_cycles
 
                 puts opcode_data if @debug
 
@@ -138,7 +138,7 @@ module Snes
                 handler = @current_opcode_data.handler
                 $logger.debug("0x#{opcode.to_s(16)} - Operation #{handler}") if @debug
                 # $logger.debug("Operation #{handler} : #{@pc.to_s(16)}") if @debug
-                base_cycles = @current_opcode_data.cycles
+                base_cycles = @current_opcode_data.base_cycles
                 [handler, base_cycles]
             end
 

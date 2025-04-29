@@ -17,6 +17,7 @@ module Snes
                         @a = (@a & 0xFF00) | value # Store value into the low byte of A, keeping high byte intact
                         set_p_flag(:n, (value & 0x80) != 0)
                     else # 16-bit - native
+                        # bytes_used + 1
                         value = read_16
                         increment_pc!(2)
                         @a = value

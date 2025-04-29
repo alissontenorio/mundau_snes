@@ -1,21 +1,15 @@
 module MundauSnesTest
-    class SystemControlTest < CPUTest
+    class CPUSystemControlTest < CPUTest
         def test_sei
-            opcode_data = @opcodes_table[0x78] # sei
-            base_cycles = opcode_data.cycles
-            pc_expected  = @@core.pc + opcode_data.bytes_used
-            @@core.pc &= 0xFFFF   # If PC exceeeds FFFF
-            @@core.increment_pc!
+            # opcode: 0x78 operands unary
+            @@core.pc = 0x8000
+            @@core.set_p_flag(:i, false)
 
-            @@core.cycles += base_cycles
-            @@core.sei # Call Instruction
-            i = (@@core.p>>2) & 1
+            @@core.fetch_decode_execute
 
-            assert_equal 'Set Interrupt Disable Flag', opcode_data.description
+            assert_equal 'Set Interrupt Disable Flag', @@core.current_opcode_data.description
             assert_equal 2, @@core.cycles
-            assert_equal pc_expected, @@core.pc
-            assert_equal 1, i
-
+            assert_equal true, @@core.status_p_flag?(:i)
         end
     end
 end

@@ -110,11 +110,28 @@ module Snes
 
                 # Exchange Instructions
                 # XBA
-                # XCE
+
+                # This instruction is the only means provided by the 65802 and 65816 to shift between 6502 emulation
+                # mode and the full, sixteen-bit native mode.
+                def xce
+                    carry = status_p_flag?(:c)
+                    set_p_flag(:c, @emulation_mode)
+
+                    if carry # Entering emulation mode
+                        @sp &= 0xFF
+                        @sp |= 0x0100          # force SP to page 1
+                        set_p_flag(:m, true)   # A in 8-bit mode
+                        set_p_flag(:x, true)   # X and Y in 8-bit mode
+                        @x &= 0xFF             # truncate X
+                        @y &= 0xFF             # truncate Y
+                    else # Exiting emulation mode
+                        @sp &= 0xFF
+                    end
+
+                    @emulation_mode = carry
+                end
 
                 # Store Zero to Memory
-                # STZ
-
                 def stz_abs
                     offset = read_16
                     address = address_with_dbr(offset)

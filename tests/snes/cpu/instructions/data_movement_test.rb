@@ -1,6 +1,5 @@
 module MundauSnesTest
     class CPUDataMovementTest < CPUTest
-
         def test_sta_abs_8_bits
             # opcode: 8D operands: 00 21
             @@core.pc = 0x8018
@@ -133,6 +132,52 @@ module MundauSnesTest
             assert_equal 0x8D80, @@core.a
             assert_equal false, @@core.status_p_flag?(:z)
             assert_equal true, @@core.status_p_flag?(:n)
+        end
+
+        def test_xce_entering_emulation_mode
+            # Opcode 0xFB
+            @@core.pc = 0x801C
+            @@core.emulation_mode = false
+            @@core.sp = 0x2384
+            @@core.x = 0x3345
+            @@core.y = 0x5678
+            @@core.set_p_flag(:c, true)
+            @@core.set_p_flag(:m, false)
+            @@core.set_p_flag(:x, false)
+
+            @@core.fetch_decode_execute
+
+            assert_equal 'Exchange Carry and Emulation Bits', @@core.current_opcode_data.description
+            assert_equal 2, @@core.cycles
+            assert_equal 0x801D, @@core.pc
+            assert_equal 0x0184, @@core.sp
+            assert_equal 0x45, @@core.x
+            assert_equal 0x78, @@core.y
+            assert_equal true, @@core.emulation_mode
+            assert_equal false, @@core.status_p_flag?(:c)
+            assert_equal true, @@core.status_p_flag?(:m)
+            assert_equal true, @@core.status_p_flag?(:x)
+        end
+
+        def test_xce_exiting_emulation_mode
+            # Opcode 0xFB
+            @@core.pc = 0x801C
+            @@core.emulation_mode = true
+            @@core.sp = 0x184
+            @@core.x = 0x45
+            @@core.y = 0x78
+            @@core.set_p_flag(:c, false)
+
+            @@core.fetch_decode_execute
+
+            assert_equal 'Exchange Carry and Emulation Bits', @@core.current_opcode_data.description
+            assert_equal 2, @@core.cycles
+            assert_equal 0x801D, @@core.pc
+            assert_equal 0x0084, @@core.sp
+            assert_equal 0x45, @@core.x
+            assert_equal 0x78, @@core.y
+            assert_equal false, @@core.emulation_mode
+            assert_equal true, @@core.status_p_flag?(:c)
         end
     end
 end

@@ -148,7 +148,9 @@ module Snes
 
                 opcode_addr = get_opcode_addr
                 opcode = read_8(opcode_addr)
+
                 handler, base_cycles = get_opcode_data(opcode)
+
                 increment_pc! # Because of read_opcode
                 @cycles += base_cycles
                 result = send(handler) # Call Instruction

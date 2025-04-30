@@ -1,4 +1,4 @@
-# Logfile created on 2025-04-29 17:38:14 -0300 by logger.rb/v1.5.0
+# Logfile created on 2025-04-30 00:02:57 -0300 by logger.rb/v1.5.0
 DEBUG -- : --------------------------
 DEBUG -- : Fetch decode execute start
 DEBUG -- : CPU PBR=00 PC=8000 A=00 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=0 P - N=0 V=0 M=1 X=1 D=0 I=1 Z=0 C=0
@@ -7,7 +7,7 @@ DEBUG -- : Bank System - read address 0x8000
 DEBUG -- : access_rom
 
 DEBUG -- : 0x78 - Operation sei
-DEBUG -- : Cycles:  
+DEBUG -- : Cycles: 2 
 DEBUG -- :  
 DEBUG -- : --------------------------
 DEBUG -- : Fetch decode execute start
@@ -29,7 +29,7 @@ DEBUG -- :
 DEBUG -- : Bank System - write address 0x4200
 DEBUG -- : access_internal_cpu . Register: nmitimen
 
-DEBUG -- : Cycles:  
+DEBUG -- : Cycles: 4 
 DEBUG -- :  
 DEBUG -- : --------------------------
 DEBUG -- : Fetch decode execute start
@@ -51,7 +51,7 @@ DEBUG -- :
 DEBUG -- : Bank System - write address 0x420C
 DEBUG -- : access_internal_cpu . Register: hdmaen
 
-DEBUG -- : Cycles:  
+DEBUG -- : Cycles: 4 
 DEBUG -- :  
 DEBUG -- : --------------------------
 DEBUG -- : Fetch decode execute start
@@ -73,7 +73,7 @@ DEBUG -- :
 DEBUG -- : Bank System - write address 0x420B
 DEBUG -- : access_internal_cpu . Register: mdmaen
 
-DEBUG -- : Cycles:  
+DEBUG -- : Cycles: 4 
 DEBUG -- :  
 DEBUG -- : --------------------------
 DEBUG -- : Fetch decode execute start
@@ -95,7 +95,7 @@ DEBUG -- :
 DEBUG -- : Bank System - write address 0x2140
 DEBUG -- : access_ppu
 
-DEBUG -- : Cycles:  
+DEBUG -- : Cycles: 4 
 DEBUG -- :  
 DEBUG -- : --------------------------
 DEBUG -- : Fetch decode execute start
@@ -117,7 +117,7 @@ DEBUG -- :
 DEBUG -- : Bank System - write address 0x2141
 DEBUG -- : access_ppu
 
-DEBUG -- : Cycles:  
+DEBUG -- : Cycles: 4 
 DEBUG -- :  
 DEBUG -- : --------------------------
 DEBUG -- : Fetch decode execute start
@@ -139,7 +139,7 @@ DEBUG -- :
 DEBUG -- : Bank System - write address 0x2142
 DEBUG -- : access_ppu
 
-DEBUG -- : Cycles:  
+DEBUG -- : Cycles: 4 
 DEBUG -- :  
 DEBUG -- : --------------------------
 DEBUG -- : Fetch decode execute start
@@ -159,3 +159,70 @@ DEBUG -- : access_rom
 
 DEBUG -- :  
 DEBUG -- : Bank System - write address 0x2143
+DEBUG -- : access_ppu
+
+DEBUG -- : Cycles: 4 
+DEBUG -- :  
+DEBUG -- : --------------------------
+DEBUG -- : Fetch decode execute start
+DEBUG -- : CPU PBR=00 PC=8016 A=00 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=4 P - N=0 V=0 M=1 X=1 D=0 I=1 Z=0 C=0
+DEBUG -- :  
+DEBUG -- : Bank System - read address 0x8016
+DEBUG -- : access_rom
+
+DEBUG -- : 0xa9 - Operation lda_immediate
+DEBUG -- :  
+DEBUG -- : Bank System - read address 0x8017
+DEBUG -- : access_rom
+
+DEBUG -- : Cycles: 2 
+DEBUG -- :  
+DEBUG -- : --------------------------
+DEBUG -- : Fetch decode execute start
+DEBUG -- : CPU PBR=00 PC=8018 A=80 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=2 P - N=1 V=0 M=1 X=1 D=0 I=1 Z=0 C=0
+DEBUG -- :  
+DEBUG -- : Bank System - read address 0x8018
+DEBUG -- : access_rom
+
+DEBUG -- : 0x8d - Operation sta_abs
+DEBUG -- :  
+DEBUG -- : Bank System - read address 0x8019
+DEBUG -- : access_rom
+
+DEBUG -- :  
+DEBUG -- : Bank System - read address 0x801A
+DEBUG -- : access_rom
+
+DEBUG -- :  
+DEBUG -- : Bank System - write address 0x2100
+DEBUG -- : access_ppu
+
+DEBUG -- : Cycles: 4 
+DEBUG -- :  
+DEBUG -- : --------------------------
+DEBUG -- : Fetch decode execute start
+DEBUG -- : CPU PBR=00 PC=801B A=80 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=4 P - N=1 V=0 M=1 X=1 D=0 I=1 Z=0 C=0
+DEBUG -- :  
+DEBUG -- : Bank System - read address 0x801B
+DEBUG -- : access_rom
+
+DEBUG -- : 0x18 - Operation clc
+DEBUG -- : Cycles: 2 
+DEBUG -- :  
+DEBUG -- : --------------------------
+DEBUG -- : Fetch decode execute start
+DEBUG -- : CPU PBR=00 PC=801C A=80 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=2 P - N=1 V=0 M=1 X=1 D=0 I=1 Z=0 C=0
+DEBUG -- :  
+DEBUG -- : Bank System - read address 0x801C
+DEBUG -- : access_rom
+
+DEBUG -- : 0xfb - Operation xce
+DEBUG -- : Cycles: 2 
+DEBUG -- :  
+DEBUG -- : --------------------------
+DEBUG -- : Fetch decode execute start
+DEBUG -- : CPU PBR=00 PC=801D A=80 X=00 Y=00 SP=00FF DP=00 DBR=00 Emulation=false Cycles=2 P - N=1 V=0 M=1 X=1 D=0 I=1 Z=0 C=1
+DEBUG -- :  
+DEBUG -- : Bank System - read address 0x801D
+DEBUG -- : access_rom
+

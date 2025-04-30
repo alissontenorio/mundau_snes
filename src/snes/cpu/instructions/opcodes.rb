@@ -52,6 +52,8 @@ module Snes
 
                 TABLE = {
                     # System Control
+                    0x18 => Opcode.new(:clc, 'Clear Carry Flag', AddressingMode::IMPLIED, 0b0000_0001, 1, 2),
+
                     0x78 => Opcode.new(:sei, 'Set Interrupt Disable Flag', AddressingMode::IMPLIED, 0b0000_0100, 1, 2),
 
                     # Data Movement
@@ -88,6 +90,8 @@ module Snes
                     # 0xB7 => Opcode.new(:lda_dp_indirect_long_y, 'Load Accumulator from Memory', AddressingMode::DIRECT_PAGE_INDIRECT_LONG_INDEXED_Y, 0b1000_0010, 2, 6),
                     # 0xA3 => Opcode.new(:lda_sr, 'Load Accumulator from Memory', AddressingMode::STACK_RELATIVE, 0b1000_0010, 2, 4),
                     # 0xB3 => Opcode.new(:lda_sr_indirect_y, 'Load Accumulator from Memory', AddressingMode::STACK_RELATIVE_INDIRECT_INDEXED_Y, 0b1000_0010, 2, 7),
+
+                    0xFB => Opcode.new(:xce, 'Exchange Carry and Emulation Bits', AddressingMode::IMPLIED, 0b0011_0011, 1, 2),
 
                     # Arithmetic
                     # 0xE8 => Opcode.new(:inx, 'Increment X register', AddressingMode::IMPLIED, 0b1000_0010, 1, 2),

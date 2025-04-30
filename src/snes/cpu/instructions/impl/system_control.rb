@@ -47,6 +47,10 @@ module Snes
                 def sei
                     set_p_flag(:i, true)
                 end
+
+                def clc
+                    set_p_flag(:c, false)
+                end
             end
         end
     end

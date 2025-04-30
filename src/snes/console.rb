@@ -80,8 +80,6 @@ module Snes
 
         def run_cpu
             puts "Run cpu" if @debug
-
-
             core = Snes::CPU::WDC65816.new
             internal_cpu_registers = Snes::CPU::InternalCPURegisters.new
             @m_map.set_internal_cpu_registers(internal_cpu_registers)
@@ -99,7 +97,7 @@ module Snes
                 # end
 
                 # sleep_time = (1.0 / 24)
-                sleep_time = (0.5)
+                sleep_time = (0.2)
                 sleep(sleep_time) # To simulate frame rate for CPU
                 # stop if test_counter > 4
             end
@@ -129,7 +127,7 @@ module Snes
             $logger.debug("Fetch decode execute start") if @debug
             $logger.debug("#{core.inspect}") if @debug
             core.fetch_decode_execute
-            $logger.debug("Cycles: #{core.base_cycles} ") if @debug
+            $logger.debug("Cycles: #{core.cycles} ") if @debug
             puts if @debug
             $logger.debug(" ") if @debug
             $stdout.flush if @debug
@@ -143,6 +141,9 @@ module Snes
                 cpu_thread = Thread.new {
                     begin
                         run_cpu
+                    rescue => e
+                        puts "An error occurred while executing instruction: #{e.message}" if @debug
+                        raise e
                     ensure
                         turn_off
                         puts "CPU Thread has finished or was killed." if @debug
@@ -159,6 +160,8 @@ module Snes
                     end
                 }
 
+                cpu_thread.report_on_exception = true
+                ppu_thread.report_on_exception = true
                 cpu_thread.abort_on_exception = false
                 cpu_thread.name = "CPU Thread"
                 ppu_thread.abort_on_exception = false

@@ -66,7 +66,7 @@ module Snes
                 # X 	    #$10 	00010000 	Index register size (native mode only), (0 = 16-bit, 1 = 8-bit)
                 # D 	    #$08 	00001000 	Decimal
                 # I 	    #$04 	00000100 	IRQ disable
-                # Z 	    #$02 	00000010 	Zero
+                # Z 	    #$02 	00000010 	Zero  (0 = Last operation was not a zero operation, 1 = Last operation was a zero operation)
                 # C 	    #$01 	00000001 	Carry
                 # E 			                6502 emulation mode
                 # B 	    #$10 	00010000 	Break (emulation mode only)
@@ -130,16 +130,18 @@ module Snes
                 emulation_mode? ? @pc : ((@pbr << 16) + @pc)
             end
 
-            def get_opcode_data(opcode)
-                @current_opcode_data = @opcodes_table[opcode] # 1 cycle for fetching the opcode
-                raise NotImplementedError, "Opcode 0x%02X not implemented" % opcode unless @current_opcode_data
-                puts "0x#{opcode.to_s(16).upcase} - #{@current_opcode_data}" if @debug
+            def debug_opcode_data(opcode)
+                puts "\e[33m0x#{opcode.to_s(16).upcase}\e[0m - #{@current_opcode_data}" if @debug
                 # opcode_something = opcode_data.disassemble
                 handler = @current_opcode_data.handler
                 $logger.debug("0x#{opcode.to_s(16)} - Operation #{handler}") if @debug
                 # $logger.debug("Operation #{handler} : #{@pc.to_s(16)}") if @debug
-                base_cycles = @current_opcode_data.base_cycles
-                [handler, base_cycles]
+            end
+
+            def get_opcode_data(opcode)
+                @current_opcode_data = @opcodes_table[opcode] # 1 cycle for fetching the opcode
+                raise NotImplementedError, "Opcode 0x%02X not implemented" % opcode unless @current_opcode_data
+                debug_opcode_data(opcode) if @debug
             end
 
             def fetch_decode_execute
@@ -149,11 +151,11 @@ module Snes
                 opcode_addr = get_opcode_addr
                 opcode = read_8(opcode_addr)
 
-                handler, base_cycles = get_opcode_data(opcode)
+                get_opcode_data(opcode)
 
                 increment_pc! # Because of read_opcode
-                @cycles += base_cycles
-                result = send(handler) # Call Instruction
+                @cycles += @current_opcode_data.base_cycles
+                result = send(@current_opcode_data.handler) # Call Instruction
             end
 
             def increment_cycles_if_page_crossing(old_pc)
@@ -170,8 +172,8 @@ module Snes
 
             def read_16
                 lo = read_8(full_pc)
-                pbr, pc = increment_pc
-                hi = read_8(full_pc(pbr, pc))
+                pc = increment_pc
+                hi = read_8(full_pc(pc))
                 (hi << 8) | lo # Little Endian Word Fetch from Instruction Stream
             end
 
@@ -188,9 +190,33 @@ module Snes
                 write_8(address + 1, (value >> 8) & 0xFF) # High Byte
             end
 
-            # Effective address using DBR (for Absolute)
-            def address_with_dbr(offset)
-                (@dbr << 16) | (offset & 0xFFFF)
+            def fetch_data
+                case @current_opcode_data.addressing_mode
+                when :immediate
+                    fetch_immediate
+                when :absolute
+                    fetch_absolute
+                else
+                    raise "No mode reach"
+                end
+            end
+
+            def fetch_immediate(p_flag: :m, force_8bit: false)
+                if force_8bit || status_p_flag?(p_flag) # 8-bit - emulation
+                    value = read_8
+                    increment_pc!
+                else # 16-bit - native
+                    # bytes_used + 1
+                    value = read_16
+                    increment_pc!(2)
+                end
+                value
+            end
+
+            def fetch_absolute
+                address = read_16  # Fetch 16-bit absolute address
+                increment_pc!(2)    # Move PC forward by 2 bytes
+                address
             end
 
             # Direct Page mode
@@ -237,9 +263,9 @@ module Snes
             end
 
             def inspect
-                "CPU PBR=%02X PC=%04X A=%02X X=%02X Y=%02X SP=%04X DP=%02X DBR=%02X Emulation=%s Cycles=%s P - %s" %
+                "CPU PBR=%02X PC=%04X A=%02X X=%02X Y=%02X SP=%04X DP=%02X DBR=%02X Emulation=%s Cycles=%s P=%02X - %s" %
                     # [@pbr, @pc, @a, @x, @y, @sp, @dp, @dbr, @emulation_mode, @cycles, @p, WDC65816.debug_format_flags(@p)]
-                    [@pbr, @pc, @a, @x, @y, @sp, @dp, @dbr, @emulation_mode, @cycles, WDC65816.debug_format_flags(@p)]
+                    [@pbr, @pc, @a, @x, @y, @sp, @dp, @dbr, @emulation_mode, @cycles, @p, WDC65816.debug_format_flags(@p)]
             end
 
             def status_p_flag?(symbol)
@@ -265,27 +291,19 @@ module Snes
                 end
             end
 
-            def increment_pc(bytes = 1, pc = @pc, pbr = @pbr)
-                pc += bytes
-                if pc > 0xFFFF
-                    pc &= 0xFFFF
-                    pbr = (pbr + 1) & 0xFF if native_mode?
-                end
-                [pbr, pc]
+            def increment_pc(bytes = 1, pc = @pc)
+                (pc + bytes) & 0xFFFF
             end
 
             def increment_pc!(bytes = 1)
                 old_pc = @pc
                 @pc += bytes
                 increment_cycles_if_page_crossing(old_pc)
-                if @pc > 0xFFFF
-                    @pc &= 0xFFFF
-                    @pbr = (@pbr + 1) & 0xFF if native_mode?
-                end
+                @pc &= 0xFFFF
             end
 
-            def full_pc(pbr = @pbr, pc = @pc)
-                (pbr << 16) | pc
+            def full_pc(pc = @pc, dbr = @dbr)
+                (dbr << 16) | pc
             end
 
             # Instructions That Could Cross Page Boundaries:

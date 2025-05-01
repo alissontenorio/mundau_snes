@@ -96,8 +96,8 @@ module Snes
                 #     puts "An error occurred while executing instruction:"
                 # end
 
-                # sleep_time = (1.0 / 24)
-                sleep_time = (0.2)
+                # sleep_time = (1.0 / 60)
+                sleep_time = (1.0 / 5)
                 sleep(sleep_time) # To simulate frame rate for CPU
                 # stop if test_counter > 4
             end
@@ -112,7 +112,7 @@ module Snes
             while @running
                 ppu.step
                 @bus.set_frame_buffer(ppu.get_frame_buffer)
-                sleep_time = (1.0 / 24)
+                sleep_time = (1.0 / 60)
                 sleep(sleep_time) # To simulate frame rate for PPU
             end
         end

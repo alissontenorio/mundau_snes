@@ -94,9 +94,9 @@ module Snes
                     access_low_ram(bank, offset, operation, value)
                 when MemoryRange::BANK_SYSTEM_OFFSET[:ppu]          # 0x2000..0x21FF
                     access_ppu(bank, offset, operation, value)
-                when MemoryRange::BANK_SYSTEM_OFFSET[:apu]          # 0x2000..0x21FF
+                when MemoryRange::BANK_SYSTEM_OFFSET[:apu]          # 0x2200..0x21FF # Incorrect. This range should be 0x2200..0x22FF for APU Registers. The APU registers are used to control the audio system. The 0x2200 range is the start of the APU's memory-mapped I/O.
                     access_apu(bank, offset, operation, value)
-                when MemoryRange::BANK_SYSTEM_OFFSET[:controller]   # 0x4000..0x41FF
+                when MemoryRange::BANK_SYSTEM_OFFSET[:controller]   # 0x4000..0x41FF # Incorrect. The controller registers are usually in the range 0x4016..0x4017
                     access_controller(bank, offset, operation, value)
                 when MemoryRange::BANK_SYSTEM_OFFSET[:internal_cpu] # 0x4200..0x42FF
                     access_internal_cpu(bank, offset, operation, value)

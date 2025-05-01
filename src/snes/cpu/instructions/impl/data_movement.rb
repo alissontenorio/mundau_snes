@@ -11,15 +11,12 @@ module Snes
                 # STY
 
                 def lda_immediate # 0xA9
+                    value = fetch_data
+
                     if status_p_flag?(:m) # 8-bit - emulation
-                        value = read_8
-                        increment_pc!
                         @a = (@a & 0xFF00) | value # Store value into the low byte of A, keeping high byte intact
                         set_p_flag(:n, (value & 0x80) != 0)
                     else # 16-bit - native
-                        # bytes_used + 1
-                        value = read_16
-                        increment_pc!(2)
                         @a = value
                         set_p_flag(:n, (value & 0x8000) != 0)
                         @cycles += 1
@@ -29,36 +26,8 @@ module Snes
                     set_p_flag(:z, value == 0)
                 end
 
-                # def lda_absolute
-                #     # Read the 16-bit address from the instruction stream
-                #     address = read_16
-                #     increment_pc(2) # Because read_16 manually reads bytes, but your PC still needs to move forward
-                #
-                #     # Form the full address by combining PBR and the 16-bit address
-                #     full_address = (@pbr << 16) | address
-                #
-                #     # Check M flag to know if accumulator is 8-bit or 16-bit
-                #     if status_p_flag?(:m)
-                #         value = read_8(full_address)
-                #         @a = (@a & 0xFF00) | value # Only update low byte if 8-bit
-                #         set_p_flag(:n, (value & 0x80) != 0) # Set Negative flag
-                #         set_p_flag(:z, value == 0)          # Set Zero flag
-                #     else
-                #         lo = read_8(full_address)
-                #         hi = read_8(full_address + 1)
-                #         value = (hi << 8) | lo
-                #         @a = value
-                #         set_p_flag(:n, (value & 0x8000) != 0)
-                #         set_p_flag(:z, value == 0)
-                #     end
-                #
-                #     # This instruction normally consumes 4 cycles
-                #     increment_cycles(4)
-                # end
-
                 def sta_abs
-                    address = read_16  # Fetch 16-bit absolute address
-                    increment_pc!(2)    # Move PC forward by 2 bytes
+                    address = fetch_data
 
                     if status_p_flag?(:m) # 8-bit accumulator mode
                         value = @a & 0x00FF  # Use only the low 8 bits of A
@@ -100,9 +69,27 @@ module Snes
                 # TXS
                 # TXA
                 # TYA
+
                 # TCD
+                def tcd # 0x5B
+                    # A -> D (16 bits)
+                    @dp = @a & 0xFFFF
+
+                    set_p_flag(:z, @dp == 0)
+                    set_p_flag(:n, (@dp & 0x8000) != 0)
+                end
+
                 # TDC
+
                 # TCS
+                def tcs
+                    if emulation_mode
+                        @sp = 0x0100 | (@a & 0xFF)
+                    else
+                        @sp = @a & 0xFFFF
+                    end
+                end
+
 
                 # TSC
                 # TXY
@@ -124,19 +111,14 @@ module Snes
                         set_p_flag(:x, true)   # X and Y in 8-bit mode
                         @x &= 0xFF             # truncate X
                         @y &= 0xFF             # truncate Y
-                    else # Exiting emulation mode
-                        @sp &= 0xFF
                     end
 
                     @emulation_mode = carry
                 end
 
                 # Store Zero to Memory
-                def stz_abs
-                    offset = read_16
-                    address = address_with_dbr(offset)
-
-                    increment_pc!(2)
+                def stz_abs # 0x9C
+                    address = fetch_data
 
                     if status_p_flag?(:m)
                         write_8(address, 0x00) # emulation mode

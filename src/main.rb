@@ -6,7 +6,7 @@ require_relative 'interface/app'
 
 extend Utils::FileOperations
 
-# rom_filepath = ARGV[0]
+debug = ARGV[0] != "nd"
 megaman_x_rom_filepath = "/mnt/c/Users/Alisson/dev/pessoal/mundau_snes/roms/Mega Man X (E).smc"
 pacman_rom_filepath = "/mnt/c/Users/Alisson/dev/pessoal/mundau_snes/roms/pacman.smc"
 dkc2_rom_filepath = "/mnt/c/Users/Alisson/dev/pessoal/mundau_snes/roms/Donkey Kong Country 2 - Diddy's Kong Quest (USA) (En,Fr).sfc"
@@ -45,10 +45,6 @@ set_logger
 # rom_raw = open_rom(tg3000_rom_filepath)
 # rom_raw = open_rom(yoshi_rom_filepath)
 rom_raw = open_rom(zelda_rom_filepath)
-
-
-
-debug = true
 
 puts "Turning on the console" if debug
 

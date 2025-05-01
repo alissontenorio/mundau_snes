@@ -13,37 +13,35 @@ module Snes
                 # SEI
                 # CLI
                 # CLV
-                # SEP
+                # SEP 0xE2
+                def sep
+                    value = fetch_immediate(force_8bit: true)
+
+                    @p |= value
+                    if emulation_mode
+                        set_p_flag(:m, true)
+                        set_p_flag(:x, true)
+                    end
+                end
+
+
                 # REP
+                def rep
+                    value = fetch_immediate(force_8bit: true)
+
+                    @p &= ~value & 0xFF      # Clear the bits in the P register where value is 1
+                    if emulation_mode
+                        set_p_flag(:m, false)  # Accumulator must be 16-bit
+                        set_p_flag(:x, false)  # Index registers must be 16-bit
+                    end
+                end
+
                 # COP
                 # STP
                 # WAI
                 # WDM
 
-                # === Opcode 0x78 ─ SEI (Set Interrupt Disable) =========================================
-                #
-                # Sets the Interrupt Disable (I) flag in the P register, disabling interrupts.
-                # This instruction prevents the CPU from responding to interrupts until the
-                # Interrupt Disable flag is cleared.
-                #
-                # Mode:          Implied
-                # Size:          1 byte, 2 cycles
-                # Flags Affected: I (Interrupt Disable)
-                #
-                # === Operation:
-                #   - The Interrupt Disable (I) flag is set to 1, disabling interrupts.
-                #   - No other flags in the P register are affected.
-                #
-                # === Example:
-                #   SEI  # Disables interrupts by setting the Interrupt Disable flag (I)
-                #
-                # === Usage:
-                #   SEI is used when the CPU needs to prevent interrupts during critical code execution
-                #   to ensure uninterrupted processing.
-                #
-                # === Note:
-                #   - This instruction does not modify the program counter (PC) or any other processor state.
-                #   - Interrupts remain disabled until the SEI is cleared by instructions like CLI (Clear Interrupt Disable).
+                # SEI 0x78
                 def sei
                     set_p_flag(:i, true)
                 end

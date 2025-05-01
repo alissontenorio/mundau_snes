@@ -46,7 +46,7 @@ module Snes
                     end
 
                     def to_s
-                        "Opcode handler=#{handler.inspect} desc=#{description.inspect} mode=#{addressing_mode.inspect} p_flags=#{p_flags.inspect} bytes=#{base_bytes_used.inspect} cycles=#{base_cycles.inspect}"
+                        "Opcode handler=\e[34m#{handler.inspect}\e[0m desc=#{description.inspect} mode=#{addressing_mode.inspect} p_flags=#{p_flags.inspect} bytes=#{base_bytes_used.inspect} cycles=#{base_cycles.inspect}"
                     end
                 end
 
@@ -55,6 +55,10 @@ module Snes
                     0x18 => Opcode.new(:clc, 'Clear Carry Flag', AddressingMode::IMPLIED, 0b0000_0001, 1, 2),
 
                     0x78 => Opcode.new(:sei, 'Set Interrupt Disable Flag', AddressingMode::IMPLIED, 0b0000_0100, 1, 2),
+
+                    0xE2 => Opcode.new(:sep, 'Set Status Bit', AddressingMode::IMMEDIATE, 0b1111_1111, 2, 3),
+
+                    0xC2 => Opcode.new(:rep, 'Reset Status Bit', AddressingMode::IMMEDIATE, 0b1111_1111, 2, 3),
 
                     # Data Movement
                     # 0x64 => Opcode.new(:stz_dp, 'Store Zero to Memory', AddressingMode::DIRECT_PAGE, 0b0000_0000, 2, 3),
@@ -92,6 +96,9 @@ module Snes
                     # 0xB3 => Opcode.new(:lda_sr_indirect_y, 'Load Accumulator from Memory', AddressingMode::STACK_RELATIVE_INDIRECT_INDEXED_Y, 0b1000_0010, 2, 7),
 
                     0xFB => Opcode.new(:xce, 'Exchange Carry and Emulation Bits', AddressingMode::IMPLIED, 0b0011_0011, 1, 2),
+
+                    0x5B => Opcode.new(:tcd, 'Transfer 16-Bit Accumulator to Direct Page Register', AddressingMode::IMPLIED, 0b1000_0010, 1, 2),
+                    0x1B => Opcode.new(:tcs, 'Transfer Accumulator to Stack Pointer', AddressingMode::IMPLIED, 0b1000_0010, 1, 2),
 
                     # Arithmetic
                     # 0xE8 => Opcode.new(:inx, 'Increment X register', AddressingMode::IMPLIED, 0b1000_0010, 1, 2),

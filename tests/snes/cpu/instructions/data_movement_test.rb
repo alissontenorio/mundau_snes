@@ -173,7 +173,7 @@ module MundauSnesTest
             assert_equal 'Exchange Carry and Emulation Bits', @@core.current_opcode_data.description
             assert_equal 2, @@core.cycles
             assert_equal 0x801D, @@core.pc
-            assert_equal 0x0084, @@core.sp
+            assert_equal 0x0184, @@core.sp
             assert_equal 0x45, @@core.x
             assert_equal 0x78, @@core.y
             assert_equal false, @@core.emulation_mode

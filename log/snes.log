@@ -1,4 +1,4 @@
-# Logfile created on 2025-05-01 02:43:23 -0300 by logger.rb/v1.5.0
+# Logfile created on 2025-05-01 02:57:59 -0300 by logger.rb/v1.5.0
 DEBUG -- : --------------------------
 DEBUG -- : Fetch decode execute start
 DEBUG -- : CPU PBR=00 PC=8000 A=00 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=0 P=34 - N=0 V=0 M=1 X=1 D=0 I=1 Z=0 C=0

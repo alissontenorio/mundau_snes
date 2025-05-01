@@ -9,7 +9,7 @@ Put this path /home/alisson/.rbenv/bin/rbenv
 ruby src/main.rb
 
 # Run emulator no debug
-ruby src/main nd
+ruby src/main.rb nd
 
 # Run tests
 ruby tests/run_tests.rb

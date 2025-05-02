@@ -45,6 +45,7 @@ set_logger
 # rom_raw = open_rom(tg3000_rom_filepath)
 # rom_raw = open_rom(yoshi_rom_filepath)
 rom_raw = open_rom(zelda_rom_filepath)
+# rom_raw = open_rom(megaman_x_rom_filepath)
 
 puts "Turning on the console" if debug
 

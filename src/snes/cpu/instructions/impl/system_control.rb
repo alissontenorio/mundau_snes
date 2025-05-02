@@ -3,18 +3,17 @@ module Snes
         module Instructions
             module SystemControl
                 # Interrupts and System Control Instructions
-                # BRK
-                # RTI
                 # NOP
+
                 # SEC
-                # CLC
                 # SED
                 # CLD
-                # SEI
                 # CLI
                 # CLV
-                # SEP 0xE2
-                def sep
+                # STP
+
+                # SEP
+                def sep # 0xE2
                     value = fetch_immediate(force_8bit: true)
 
                     @p |= value
@@ -26,7 +25,7 @@ module Snes
 
 
                 # REP
-                def rep
+                def rep # 0xC2
                     value = fetch_immediate(force_8bit: true)
 
                     @p &= ~value & 0xFF      # Clear the bits in the P register where value is 1
@@ -36,7 +35,6 @@ module Snes
                     end
                 end
 
-                # COP
                 # STP
                 # WAI
                 # WDM
@@ -46,6 +44,7 @@ module Snes
                     set_p_flag(:i, true)
                 end
 
+                # CLC
                 def clc
                     set_p_flag(:c, false)
                 end

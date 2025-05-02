@@ -7,11 +7,13 @@ require_relative 'cpu/internal_cpu_registers'
 require_relative '../exceptions/cartridge_exceptions'
 require_relative '../cartridge/cartridge'
 require_relative '../cartridge/cartridge_builder'
+require_relative '../utils/nanosleep'
 
 module Snes
     class Console
         # include Utils::FileOperations
         include Singleton
+        include Utils::NanoSleep
 
         LOW_CLOCK_SPEED = 1.79    # 12-clocks per cycle
         MEDIUM_CLOCK_SPEED = 2.68 # 8-clocks per cycle) (200ns)
@@ -96,9 +98,10 @@ module Snes
                 #     puts "An error occurred while executing instruction:"
                 # end
 
-                # sleep_time = (1.0 / 60)
-                sleep_time = (1.0 / 5)
-                sleep(sleep_time) # To simulate frame rate for CPU
+                # sleep_ns(120)  # wait ~120 nanossegundos
+                sleep_ns(50000000)
+                # sleep_time = (1.0 / FPS)
+                # sleep(sleep_time) # To simulate frame rate for CPU
                 # stop if test_counter > 4
             end
         end
@@ -112,6 +115,7 @@ module Snes
             while @running
                 ppu.step
                 @bus.set_frame_buffer(ppu.get_frame_buffer)
+                # sleep_ns(120)  # wait ~120 nanossegundos
                 sleep_time = (1.0 / 60)
                 sleep(sleep_time) # To simulate frame rate for PPU
             end

@@ -9,7 +9,7 @@ module Snes
             include Snes::CPU::Instructions::Opcodes
 
             include Snes::CPU::Instructions::DataMovement
-            include Snes::CPU::Instructions::FlowOfControl
+            include Snes::CPU::Instructions::ControlFlow
             include Snes::CPU::Instructions::Arithmetic
             include Snes::CPU::Instructions::Logical
             include Snes::CPU::Instructions::BitManipulation
@@ -83,6 +83,9 @@ module Snes
                 # PBR - Program Bank - Program Bank, holds the bank address of all instruction fetches.
                 # 8-bit
                 @pbr = 0
+
+                # Stack Bank
+                @stack_bank = 0
 
                 # === Emulation Mode vs Native Mode ===
                 #
@@ -263,9 +266,9 @@ module Snes
             end
 
             def inspect
-                "CPU PBR=%02X PC=%04X A=%02X X=%02X Y=%02X SP=%04X DP=%02X DBR=%02X Emulation=%s Cycles=%s P=%02X - %s" %
+                "CPU PC=%02X%04X A=%02X X=%02X Y=%02X SP=%04X DP=%02X DBR=%02X Emulation=%s Cycles=%s P=%02X SBR=%02X - %s" %
                     # [@pbr, @pc, @a, @x, @y, @sp, @dp, @dbr, @emulation_mode, @cycles, @p, WDC65816.debug_format_flags(@p)]
-                    [@pbr, @pc, @a, @x, @y, @sp, @dp, @dbr, @emulation_mode, @cycles, @p, WDC65816.debug_format_flags(@p)]
+                    [@pbr, @pc, @a, @x, @y, @sp, @dp, @dbr, @emulation_mode, @cycles, @p, @stack_bank, WDC65816.debug_format_flags(@p)]
             end
 
             def status_p_flag?(symbol)

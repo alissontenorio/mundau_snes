@@ -2,7 +2,7 @@ require_relative 'addressing_modes'
 require_relative 'impl/arithmetic'
 require_relative 'impl/bit_manipulation'
 require_relative 'impl/data_movement'
-require_relative 'impl/flow_of_control'
+require_relative 'impl/control_flow'
 require_relative 'impl/logical'
 require_relative 'impl/subroutine_calls'
 require_relative 'impl/system_control'
@@ -102,6 +102,9 @@ module Snes
 
                     # Arithmetic
                     # 0xE8 => Opcode.new(:inx, 'Increment X register', AddressingMode::IMPLIED, 0b1000_0010, 1, 2),
+
+                    # Subroutine Calls
+                    0x20 => Opcode.new(:jsr_abs, 'Jump to Subroutine', AddressingMode::ABSOLUTE, 0b0000_0000, 3, 6),
                 }
             end
         end

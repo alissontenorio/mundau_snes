@@ -10,3 +10,5 @@ gem 'opengl'
 gem 'glfw3'
 
 #  gem chunky_png
+
+gem 'ffi' # Simulate snes clock

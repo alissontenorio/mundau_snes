@@ -61,6 +61,14 @@ emulator_thread = Thread.new {
 }
 emulator_thread.abort_on_exception = true
 
+# if debug
+#     class Integer
+#         def to_s
+#             "0x%06X" % self  # Hexadecimal with zero-padding to 6 digits
+#         end
+#     end
+# end
+
 console.turn_on
 
 emulator_thread.join

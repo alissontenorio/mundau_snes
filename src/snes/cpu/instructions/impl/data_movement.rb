@@ -3,30 +3,43 @@ module Snes
         module Instructions
             module DataMovement
                 # Load/Store Instructions
-                # LDA
+
                 # LDX
                 # LDY
-                # STA
+
+                def ldy_immediate
+                    value = fetch_data(p_flag: :x)
+
+                    if status_p_flag?(:x) # 8-bit index register (X/Y)
+                        @y = value & 0x00FF # ToDo: Check if this is correct, Maybe we need to preserve the high byte of Y
+                        # @y = (@y & 0xFF00) | value
+                        set_nz_flags(@y, true)
+                    else # 16-bit index register
+                        @y = value & 0xFFFF
+                        set_nz_flags(@y, false)
+                        @cycles += 1
+                    end
+                end
+
                 # STX
                 # STY
 
+                # LDA
                 def lda_immediate # 0xA9
                     value = fetch_data
 
                     if status_p_flag?(:m) # 8-bit - emulation
                         @a = (@a & 0xFF00) | value # Store value into the low byte of A, keeping high byte intact
-                        set_p_flag(:n, (value & 0x80) != 0)
+                        set_nz_flags(@a, true)
                     else # 16-bit - native
-                        @a = value
-                        set_p_flag(:n, (value & 0x8000) != 0)
+                        @a = value & 0xFFFF
+                        set_nz_flags(@a, false)
                         @cycles += 1
                     end
-
-                    # Update Zero (Z) flag: set if value is zero
-                    set_p_flag(:z, value == 0)
                 end
 
-                def sta_abs
+                # STA
+                def sta # abs
                     address = fetch_data
 
                     if status_p_flag?(:m) # 8-bit accumulator mode
@@ -40,9 +53,48 @@ module Snes
                     end
                 end
 
+                def sta_dp
+                    sta
+                    # Add 1 cycle if Direct Page is unaligned
+                    @cycles += 1 if (@dp & 0xFF) != 0
+                end
+
+                # STZ
+                # Store Zero to Memory
+                def stz_abs # 0x9C
+                    address = fetch_data
+
+                    if status_p_flag?(:m)
+                        write_8(address, 0x00) # emulation mode
+                    else
+                        write_16(address, 0x0000) # native mode
+                        @cycles += 1
+                    end
+                end
+
+                # def stz_dp
+                #     offset = read_8           # Fetch 8-bit offset
+                #     address = address_direct_page(offset)    # Compute effective 24-bit address
+                #
+                #     if status_p_flag?(:m)
+                #         write_8(address, 0x00) # emulation mode
+                #     else
+                #         write_16(address, 0x0000) # native mode
+                #         @cycles += 1 # Add 1 cycle if M flag is 0 (16-bit mode)
+                #     end
+                #
+                #     @cycles += 1 if (@dp & 0x00FF) != 0x00   # Add 1 if DP low byte is not zero
+                #
+                #     @cycles += (@dp == 0 ? 3 : 4)
+                # end
+
                 # Push Instructions
                 # PHA
                 # PHP
+                def php
+                    push_8(@p)
+                end
+
                 # PHX
                 # PHY
                 # PHB
@@ -74,9 +126,7 @@ module Snes
                 def tcd # 0x5B
                     # A -> D (16 bits)
                     @dp = @a & 0xFFFF
-
-                    set_p_flag(:z, @dp == 0)
-                    set_p_flag(:n, (@dp & 0x8000) != 0)
+                    set_nz_flags(@dp, false)
                 end
 
                 # TDC
@@ -94,37 +144,6 @@ module Snes
                 # TSC
                 # TXY
                 # TYX
-
-
-
-                # STZ
-                # Store Zero to Memory
-                def stz_abs # 0x9C
-                    address = fetch_data
-
-                    if status_p_flag?(:m)
-                        write_8(address, 0x00) # emulation mode
-                    else
-                        write_16(address, 0x0000) # native mode
-                        @cycles += 1
-                    end
-                end
-
-                def stz_dp
-                    offset = read_8           # Fetch 8-bit offset
-                    address = address_direct_page(offset)    # Compute effective 24-bit address
-
-                    if status_p_flag?(:m)
-                        write_8(address, 0x00) # emulation mode
-                    else
-                        write_16(address, 0x0000) # native mode
-                        @cycles += 1 # Add 1 cycle if M flag is 0 (16-bit mode)
-                    end
-
-                    @cycles += 1 if (@dp & 0x00FF) != 0x00   # Add 1 if DP low byte is not zero
-
-                    @cycles += (@dp == 0 ? 3 : 4)
-                end
 
                 # Block Moves
                 # MVN

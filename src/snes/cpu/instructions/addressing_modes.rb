@@ -1,6 +1,30 @@
 module Snes
     module CPU
         module Instructions
+            # | **Addressing Mode**               | **Syntax Example** | **Effective Bank Source** | **Notes**                                               |
+            # | --------------------------------- | ------------------ | ------------------------- | ------------------------------------------------------- |
+            # | **Immediate**                     | `LDA #$12`         | *N/A*                     | Constant from instruction stream (not memory access)    |
+            # | **Direct Page**                   | `LDA $10`          | **Bank 0**                | `DP + offset`, 16-bit address                           |
+            # | **Direct Page,X**                 | `LDA $10,X`        | **Bank 0**                | `DP + offset + X`                                       |
+            # | **Direct Page,Y**                 | `LDA $10,Y`        | **Bank 0**                | Rare, same behavior as above                            |
+            # | **Absolute**                      | `LDA $1234`        | **Bank 0**                | 16-bit address, upper 8 bits = 0                        |
+            # | **Absolute,X**                    | `LDA $1234,X`      | **Bank 0**                | Indexed, but still bank 0                               |
+            # | **Absolute,Y**                    | `LDA $1234,Y`      | **Bank 0**                | Same as above                                           |
+            # | **Long**                          | `LDA $123456`      | **Explicit (24-bit)**     | Full 24-bit address encoded in instruction              |
+            # | **Long,X**                        | `LDA $123456,X`    | **Explicit (24-bit)**     | Same as above, with indexing                            |
+            # | **(Direct Page)**                 | `LDA ($10)`        | **DBR**                   | Indirect pointer in DP; final read is in DBR bank       |
+            # | **(Direct Page,X)**               | `LDA ($10,X)`      | **DBR**                   | Indexed version of above                                |
+            # | **(Direct Page),Y**               | `LDA ($10),Y`      | **DBR**                   | Add Y after indirect lookup                             |
+            # | **\[Absolute]**                   | `LDA [$1234]`      | **DBR**                   | Absolute indirect pointer in zero page                  |
+            # | **\[Absolute],Y**                 | `LDA [$1234],Y`    | **DBR**                   | Indexed version of above                                |
+            # | **Stack Relative**                | `LDA 10,S`         | **Bank 0**                | Effective address = `SP + offset`, stack is in bank 0   |
+            # | **(Stack Relative),Y**            | `LDA (10,S),Y`     | **DBR**                   | Indirect pointer from stack, final access in DBR        |
+            # | **Program Counter Relative**      | `BRA`, `BEQ`, etc. | **PBR** (code fetch only) | Not memory access                                       |
+            # | **Program Counter Relative Long** | `PER`              | **PBR**                   | Also not memory access                                  |
+            # | **Absolute Indirect**             | `JMP ($1234)`      | **Bank 0**                | Used for control flow (jump), address fetched in bank 0 |
+            # | **Absolute Long Indirect**        | `JMP [$1234]`      | **Explicit**              | Full 24-bit address                                     |
+            # | **Absolute Indexed Indirect**     | `JMP ($1234,X)`    | **Bank 0**                | Control flow only                                       |
+            # | **Block Move**                    | `MVN`, `MVP`       | **Explicit**              | Source and destination banks are operands               |
             class AddressingMode
                 ABSOLUTE = :absolute
                 ABSOLUTE_LONG = :absolute_long

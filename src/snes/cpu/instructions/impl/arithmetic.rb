@@ -19,6 +19,28 @@ module Snes
                 # ADC
                 # SBC
                 # CMP
+                def cmp_abs # 0xCD
+                    address = fetch_data
+                    value = read_16(address)
+
+                    if status_p_flag?(:m)
+                        acc = @a & 0x00FF
+                        mem = value & 0x00FF
+                        result = acc - mem
+
+                        set_nz_flags(result, true)
+                        set_p_flag(:c, acc >= mem)
+                    else
+                        acc = @a & 0xFFFF
+                        mem = value
+                        result = acc - mem
+
+                        set_nz_flags(result, false)
+                        set_p_flag(:c, acc >= mem)
+                        @cycles += 1
+                    end
+                end
+
                 # CPX
                 # CPY
 
@@ -56,13 +78,11 @@ module Snes
                 def inx
                     if status_p_flag?(:x)
                         @x = (@x + 1) & 0x00FF
-                        set_p_flag(:n, (@x & 0x80) != 0)
+                        set_nz_flags(@x, true)
                     else
                         @x = (@x + 1) & 0xFFFF
-                        set_p_flag(:n, (@x & 0x8000) != 0)
+                        set_nz_flags(@x, false)
                     end
-
-                    set_p_flag(:z, @x == 0)
                 end
             end
         end

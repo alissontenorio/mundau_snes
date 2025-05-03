@@ -34,6 +34,8 @@ module Snes
 
             # Method to read a register's value
             def read_register(address)
+                puts "PPU read register: #{address.to_s(16)}" if address == 0x2140
+                puts "PPU read register: #{address.to_s(16)}" if address == 0x2141
                 # puts "PPU read register: #{address.to_s(16)}"
                 @registers.access(:read, address)
             end

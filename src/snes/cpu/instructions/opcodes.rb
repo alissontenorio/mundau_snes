@@ -60,13 +60,16 @@ module Snes
 
                     0xC2 => Opcode.new(:rep, 'Reset Status Bit', AddressingMode::IMMEDIATE, 0b1111_1111, 2, 3),
 
+                    0x08 => Opcode.new(:php, 'Push Processor Status on Stack', AddressingMode::IMPLIED, 0b0000_0000, 1, 3),
+
                     # Data Movement
+                    0xCD => Opcode.new(:cmp_abs, 'Compare Accumulator with Memory', AddressingMode::ABSOLUTE, 0b1000_0011, 3, 4),
                     # 0x64 => Opcode.new(:stz_dp, 'Store Zero to Memory', AddressingMode::DIRECT_PAGE, 0b0000_0000, 2, 3),
                     0x9C => Opcode.new(:stz_abs, 'Store Zero to Memory', AddressingMode::ABSOLUTE, 0b0000_0000, 3, 4),
 
-                    0x8D => Opcode.new(:sta_abs, 'Store Accumulator To Memory', AddressingMode::ABSOLUTE, 0b0000_0000, 3, 4),
+                    0x8D => Opcode.new(:sta, 'Store Accumulator To Memory', AddressingMode::ABSOLUTE, 0b0000_0000, 3, 4),
                     # 0x8F => Opcode.new(:sta_abs_long, 'Store Accumulator To Memory', AddressingMode::ABSOLUTE_LONG, 0b0000_0000, 4, 5),
-                    # 0x85 => Opcode.new(:sta_dp, 'Store Accumulator To Memory', AddressingMode::DIRECT_PAGE, 0b0000_0000, 2, 3),
+                    0x85 => Opcode.new(:sta_dp, 'Store Accumulator To Memory', AddressingMode::DIRECT_PAGE, 0b0000_0000, 2, 3),
                     # 0x92 => Opcode.new(:sta_dp_indirect, 'Store Accumulator To Memory', AddressingMode::DIRECT_PAGE_INDIRECT, 0b0000_0000, 2, 5),
                     # 0x87 => Opcode.new(:sta_dp_indirect_long, 'Store Accumulator To Memory', AddressingMode::DIRECT_PAGE_INDIRECT_LONG, 0b0000_0000, 2, 6),
                     # 0x9D => Opcode.new(:sta_abs_x, 'Store Accumulator To Memory', AddressingMode::ABSOLUTE_INDEXED_X, 0b0000_0000, 3, 5),
@@ -94,6 +97,8 @@ module Snes
                     # 0xB7 => Opcode.new(:lda_dp_indirect_long_y, 'Load Accumulator from Memory', AddressingMode::DIRECT_PAGE_INDIRECT_LONG_INDEXED_Y, 0b1000_0010, 2, 6),
                     # 0xA3 => Opcode.new(:lda_sr, 'Load Accumulator from Memory', AddressingMode::STACK_RELATIVE, 0b1000_0010, 2, 4),
                     # 0xB3 => Opcode.new(:lda_sr_indirect_y, 'Load Accumulator from Memory', AddressingMode::STACK_RELATIVE_INDIRECT_INDEXED_Y, 0b1000_0010, 2, 7),
+
+                    0xA0 => Opcode.new(:ldy_immediate, 'Load Index Register Y from Memory', AddressingMode::IMMEDIATE, 0b1000_0010, 2, 2),
 
                     0xFB => Opcode.new(:xce, 'Exchange Carry and Emulation Bits', AddressingMode::IMPLIED, 0b0011_0011, 1, 2),
 

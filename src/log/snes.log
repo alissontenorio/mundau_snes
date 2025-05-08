@@ -1,4 +1,5 @@
-# Logfile created on 2025-05-08 00:40:47 -0300 by logger.rb/v1.5.0
+# Logfile created on 2025-05-08 00:42:18 -0300 by logger.rb/v1.5.0
+DEBUG -- : 0xcd - Operation mov_x_immediate
 DEBUG -- : --------------------------
 DEBUG -- : Fetch decode execute start
 DEBUG -- : CPU PC=008000 A=00 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=0 P=34 SBR=00 - N=0 V=0 M=1 X=1 D=0 I=1 Z=0 C=0
@@ -8,5 +9,92 @@ DEBUG -- : access_rom
 
 DEBUG -- : 0x78 - Operation sei
 DEBUG -- : Cycles: 2 
-DEBUG -- : 0xcd - Operation mov_x_immediate
 DEBUG -- :  
+DEBUG -- : --------------------------
+DEBUG -- : Fetch decode execute start
+DEBUG -- : CPU PC=008001 A=00 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=2 P=34 SBR=00 - N=0 V=0 M=1 X=1 D=0 I=1 Z=0 C=0
+DEBUG -- :  
+DEBUG -- : Bank System - read address 0x8001
+DEBUG -- : access_rom
+
+DEBUG -- : 0x9c - Operation stz_abs
+DEBUG -- :  
+DEBUG -- : Bank System - read address 0x8002
+DEBUG -- : access_rom
+
+DEBUG -- :  
+DEBUG -- : Bank System - read address 0x8003
+DEBUG -- : access_rom
+
+DEBUG -- :  
+DEBUG -- : Bank System - write_register address 0x4200
+DEBUG -- : InternalCPU Register - Write_register in address 4200 value 0 - NMITIMEN - Interrupt Enable Register (NMI/V-IRQ/H-IRQ)
+
+DEBUG -- : Cycles: 4 
+DEBUG -- :  
+DEBUG -- : --------------------------
+DEBUG -- : Fetch decode execute start
+DEBUG -- : CPU PC=008004 A=00 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=4 P=34 SBR=00 - N=0 V=0 M=1 X=1 D=0 I=1 Z=0 C=0
+DEBUG -- :  
+DEBUG -- : Bank System - read address 0x8004
+DEBUG -- : access_rom
+
+DEBUG -- : 0x9c - Operation stz_abs
+DEBUG -- :  
+DEBUG -- : Bank System - read address 0x8005
+DEBUG -- : access_rom
+
+DEBUG -- :  
+DEBUG -- : Bank System - read address 0x8006
+DEBUG -- : access_rom
+
+DEBUG -- :  
+DEBUG -- : Bank System - write_register address 0x420C
+DEBUG -- : InternalCPU Register - Write_register in address 420c value 0 - HDMAEN - HDMA Enable Register
+
+DEBUG -- : Cycles: 4 
+DEBUG -- :  
+DEBUG -- : --------------------------
+DEBUG -- : Fetch decode execute start
+DEBUG -- : CPU PC=008007 A=00 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=4 P=34 SBR=00 - N=0 V=0 M=1 X=1 D=0 I=1 Z=0 C=0
+DEBUG -- :  
+DEBUG -- : Bank System - read address 0x8007
+DEBUG -- : access_rom
+
+DEBUG -- : 0x9c - Operation stz_abs
+DEBUG -- :  
+DEBUG -- : Bank System - read address 0x8008
+DEBUG -- : access_rom
+
+DEBUG -- :  
+DEBUG -- : Bank System - read address 0x8009
+DEBUG -- : access_rom
+
+DEBUG -- :  
+DEBUG -- : Bank System - write_register address 0x420B
+DEBUG -- : InternalCPU Register - Write_register in address 420b value 0 - MDMAEN - DMA Enable Register
+
+DEBUG -- : Cycles: 4 
+DEBUG -- :  
+DEBUG -- : --------------------------
+DEBUG -- : Fetch decode execute start
+DEBUG -- : CPU PC=00800A A=00 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=4 P=34 SBR=00 - N=0 V=0 M=1 X=1 D=0 I=1 Z=0 C=0
+DEBUG -- :  
+DEBUG -- : Bank System - read address 0x800A
+DEBUG -- : access_rom
+
+DEBUG -- : 0x9c - Operation stz_abs
+DEBUG -- :  
+DEBUG -- : Bank System - read address 0x800B
+DEBUG -- : access_rom
+
+DEBUG -- :  
+DEBUG -- : Bank System - read address 0x800C
+DEBUG -- : access_rom
+
+DEBUG -- :  
+DEBUG -- : Bank System - write_register address 0x2140
+DEBUG -- : access_apu
+
+DEBUG -- : APU Register - Write_register in address 2140 value 0 - APUIO0 - APU IO Registers
+

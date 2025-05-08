@@ -89,7 +89,7 @@ module Snes
             # internal_cpu_registers = Snes::CPU::InternalCPURegisters.new
             # @m_map.set_internal_cpu_registers(internal_cpu_registers)
             core.setup(@m_map, @cartridge.emulation_vectors[:reset], @debug)
-            sleep_time = (1.0 / 2)
+            sleep_time = (1.0 / FPS)
             # sleep_time = (1.0 / 5)
 
             # test_counter = 0
@@ -178,20 +178,6 @@ module Snes
                     with_thread_cleanup do
                         run_cpu
                     end
-                    # begin
-                    #     puts "Starting CPU thread with run_cpu"
-                    #     run_cpu
-                    # rescue => e
-                    #     puts "An error occurred while executing instruction: #{e.message}" if @debug
-                    #     raise e
-                    # rescue => e
-                    #     # puts "An error occurred while executing instruction: #{e.message}" if @debug
-                    #     turn_off
-                    #     raise e if @debug
-                    # ensure
-                    #     # turn_off
-                    #     puts "CPU Thread has finished or was killed." if @debug
-                    # end
                 }
 
                 ppu_thread = Thread.new {
@@ -199,17 +185,6 @@ module Snes
                     with_thread_cleanup do
                         run_ppu
                     end
-                    # begin
-                    #     puts "Starting PPU thread with run_ppu"
-                    #     run_ppu
-                    # rescue => e
-                    #     # puts "An error occurred while executing instruction: #{e.message}" if @debug
-                    #     turn_off
-                    #     raise e if @debug
-                    # ensure
-                    #     # turn_off
-                    #     puts "PPU Thread has finished or was killed." if @debug
-                    # end
                 }
 
                 apu_thread = Thread.new {
@@ -217,17 +192,6 @@ module Snes
                     with_thread_cleanup do
                         run_apu
                     end
-                    # begin
-                    #     puts "Starting APU thread with run_apu"
-                    #     run_apu
-                    # rescue => e
-                    #     # puts "An error occurred while executing instruction: #{e.message}" if @debug
-                    #     turn_off
-                    #     raise e if @debug
-                    # ensure
-                    #     # turn_off
-                    #     puts "APU Thread has finished or was killed." if @debug
-                    # end
                 }
 
                 cpu_thread.report_on_exception = true
@@ -239,16 +203,6 @@ module Snes
                 ppu_thread.name = "PPU Thread"
                 apu_thread.abort_on_exception = false
                 apu_thread.name = "APU Thread"
-
-                # cpu_thread.join
-                # ppu_thread.join
-                # apu_thread.join
-            # rescue => e
-            #     puts "An error occurred while starting threads: #{e.message}" if @debug
-            #     # puts "An error occurred while starting threads:"
-            #     puts e.backtrace if @debug
-            #     stop
-            # end
         end
 
         def turn_off
@@ -279,18 +233,6 @@ module Snes
             @cartridge = nil
             @m_map = nil
         end
-
-        # def turn_off
-        #     sleep(0.1) # Wait the except message to be printed
-        #     Thread.list.each do |thread|
-        #         thread.kill if thread.alive? && thread.name == 'PPU Thread' && thread != Thread.current
-        #         thread.kill if thread.alive? && thread.name == 'CPU Thread' && thread != Thread.current
-        #         thread.kill if thread.alive? && thread.name == 'APU Thread' && thread != Thread.current
-        #     end
-        #
-        #     @cartridge = nil
-        #     @m_map = nil
-        # end
 
         def remove_cartridge
             @cartridge = nil

@@ -43,8 +43,8 @@ module MundauSnesTest
                 @ppu_register[:value] << value
             end
 
-            @original_internal_cpu_register = @@internal_cpu_registers.method(:write)
-            @@internal_cpu_registers.define_singleton_method(:write) do |address, value|
+            @original_internal_cpu_register = @@internal_cpu_registers.method(:write_register)
+            @@internal_cpu_registers.define_singleton_method(:write_register) do |address, value|
                 @internal_cpu_register = cpu_test_instance.instance_variable_get(:@internal_cpu_register)
                 @internal_cpu_register[:address] << address
                 @internal_cpu_register[:value] << value
@@ -77,7 +77,7 @@ module MundauSnesTest
 
         def teardown
             @@ppu.define_singleton_method(:write_register, &@original_write_register)
-            @@internal_cpu_registers.define_singleton_method(:write, &@original_internal_cpu_register)
+            @@internal_cpu_registers.define_singleton_method(:write_register, &@original_internal_cpu_register)
 
             # @core.setup(nil, nil, nil)
             # @console.remove_cartridge

@@ -22,17 +22,17 @@ module Snes
                 @sram = sram
                 @bus = bus
                 @debug = debug
-                @internal_cpu_registers = nil
+                @internal_cpu_registers = Snes::CPU::InternalCPURegisters
             end
 
-            def set_internal_cpu_registers(internal_cpu_registers)
-                @internal_cpu_registers = internal_cpu_registers
-            end
+            # def set_internal_cpu_registers(internal_cpu_registers)
+            #     @internal_cpu_registers = internal_cpu_registers
+            # end
 
             def access(address, operation, value = nil)
                 $logger.debug(" ") if @debug
 
-                unless [:read, :write].include?(operation)
+                unless [:read, :write_register].include?(operation)
                     raise "Invalid operation: #{operation}. Use :read or :write."
                 end
 
@@ -154,7 +154,7 @@ module Snes
                 sram_pos = position_in_contiguous_memory(bank, offset, first_bank, first_offset, page_size)
                 if operation == :read
                     @sram[sram_pos]
-                elsif operation == :write
+                elsif operation == :write_register
                     @sram[sram_pos] = value
                 end
             end
@@ -166,7 +166,7 @@ module Snes
 
                 if operation == :read
                     @ram[ram_pos]
-                elsif operation == :write
+                elsif operation == :write_register
                     @ram[ram_pos] = value
                 end
             end
@@ -176,26 +176,28 @@ module Snes
 
                 if operation == :read
                     @ram[offset]
-                elsif operation == :write
+                elsif operation == :write_register
                     @ram[offset] = value
                 end
             end
 
             def access_controller(bank, offset, operation, value)
                 $logger.debug("#{__method__}\n") if @debug
+                raise NotImplementedError, "#{__method__} is not yet implemented for controller"
             end
 
             def access_internal_cpu(bank, offset, operation, value)
-                $logger.debug("#{__method__} . Register: #{@internal_cpu_registers.address_to_symbol(offset).to_s}\n") if @debug
+                @internal_cpu_registers.debug_print(operation, offset, value) if @debug
                 if operation == :read
-                    @internal_cpu_registers.read(offset)
-                elsif operation == :write
-                    @internal_cpu_registers.write(offset, value)
+                    @internal_cpu_registers.access(:read, offset)
+                elsif operation == :write_register
+                    @internal_cpu_registers.access(:write_register, offset, value)
                 end
             end
 
             def access_dma(bank, offset, operation, value)
                 $logger.debug("#{__method__}\n") if @debug
+                raise NotImplementedError, "#{__method__} is not yet implemented for dma"
             end
 
             def access_rom(bank, offset, operation, value)
@@ -211,7 +213,7 @@ module Snes
 
                 if operation == :read
                     @bus.read_ppu(offset)
-                elsif operation == :write
+                elsif operation == :write_register
                     @bus.write_ppu(offset, value)
                 else
                     raise "Unknown operation: #{operation}"
@@ -220,13 +222,19 @@ module Snes
 
             def access_apu(bank, offset, operation, value)
                 $logger.debug("#{__method__}\n") if @debug
-                raise NotImplementedError, "#{__method__} is not yet implemented for apu"
+
+                if operation == :read
+                    @bus.read_apu(offset)
+                elsif operation == :write_register
+                    @bus.write_apu(offset, value)
+                else
+                    raise "Unknown operation: #{operation}"
+                end
             end
 
             # Convert the Snes address to the ROM address
             # ToDo: Rename method to something more appropriate
             def rom_address(bank, offset)
-                bank_pos = bank
                 case @cartridge_type
                 when :hirom
                     if MemoryRange.in_hirom_region?(bank, offset)
@@ -248,10 +256,6 @@ module Snes
                     raise NotImplementedError, "#{__method__} is not yet implemented for exhirom"
                 end
             end
-
-            # read dma/ppu2/hardware_registers
-            # read special chips
-            # write
         end
     end
 end

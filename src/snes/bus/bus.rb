@@ -16,11 +16,15 @@ module Snes
             FRAME_BUFFER = Queue.new
             PPU_ADDRESS_QUEUE = Queue.new
 
-            attr_accessor :ppu
+            attr_accessor :ppu, :apu
 
-            def setup
-                @mutex = Mutex.new
+            def setup(debug = false)
+                @ppu_mutex = Mutex.new
+                @apu_mutex = Mutex.new
                 @ppu = nil
+                @apu = nil
+
+                @debug = debug
             end
 
             def set_frame_buffer(buffer)
@@ -33,16 +37,35 @@ module Snes
             end
 
             def read_ppu(address)
-                @mutex.synchronize do
+                Snes::PPU::Registers.debug_print(:read, address) if @debug
+                @ppu_mutex.synchronize do
                     # puts "Reading from PPU register #{address.to_s(16)}"
                     @ppu.read_register(address)
                 end
             end
 
             def write_ppu(address, value)
-                @mutex.synchronize do
+                Snes::PPU::Registers.debug_print(:write_register, address, value) if @debug
+                @ppu_mutex.synchronize do
                     # puts "Writing to PPU register #{address.to_s(16)} with value #{value.to_s(16)}"
                     @ppu.write_register(address, value)
+                end
+            end
+
+            def read_apu(address)
+                Snes::APU::Registers.debug_print(:read, address) if @debug
+                @apu_mutex.synchronize do
+                    # puts "Reading from APU register #{address.to_s(16)}"
+                    @apu.read_register(address)
+                end
+            end
+
+            def write_apu(address, value)
+                Snes::APU::Registers.debug_print(:write_register, address, value) if @debug
+
+                @apu_mutex.synchronize do
+                    # puts "Writing to APU register #{address.to_s(16)} with value #{value.to_s(16)}"
+                    @apu.write_register(address, value)
                 end
             end
         end

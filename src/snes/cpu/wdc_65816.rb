@@ -23,10 +23,10 @@ module Snes
 
             attr_accessor :a, :x, :y, :pc, :sp, :p, :dp, :dbr, :pbr, :cycles, :emulation_mode, :opcodes_table, :current_opcode_data
 
-            def setup(memory, reset_addr, internal_cpu_registers, debug=false)
+            def setup(memory, reset_addr, debug=false)
                 @debug = debug
                 @memory = memory
-                @internal_cpu_registers = internal_cpu_registers
+                @internal_cpu_registers = Snes::CPU::InternalCPURegisters
 
                 @opcodes_table = Snes::CPU::Instructions::Opcodes::TABLE
                 @current_opcode_data = nil
@@ -165,7 +165,7 @@ module Snes
 
             def read_8(address)
                 value = @memory.access(address & 0xFFFFFF, :read)
-                puts "Reading value 0x%02X from address 0x%06X" % [value, address] if @debug
+                # puts "Reading value 0x%02X from address 0x%06X" % [value, address] if @debug
                 value
             end
 
@@ -177,8 +177,8 @@ module Snes
             end
 
             def write_8(address, value)
-                puts "Writing value 0x%02X to address 0x%06X" % [value, address] if @debug
-                @memory.access(address & 0xFFFFFF, :write, value & 0xFF)
+                # puts "Writing value 0x%02X to address 0x%06X" % [value, address] if @debug
+                @memory.access(address & 0xFFFFFF, :write_register, value & 0xFF)
             end
 
             # Given a value example 0x4231
@@ -205,9 +205,22 @@ module Snes
                     fetch_direct_page # bank 0
                 when :stack_push
                     nil
+                when :program_counter_relative
+                    fetch_pc_relative
                 else
                     raise "No mode reach"
                 end
+            end
+
+            def converts_8bit_unsigned_to_signed(value)
+                value & 0x80 ? value - 0x100 : value
+            end
+
+            def fetch_pc_relative
+                value = read_8(@pc)
+                offset = converts_8bit_unsigned_to_signed(value)
+                increment_pc!
+                (@pc + offset) & 0xFFFF # Ensure 16 bits
             end
 
             def fetch_immediate(p_flag: :m, force_8bit: false)
@@ -331,17 +344,17 @@ module Snes
             # - Increment/Decrement Instructions: Instructions like INX, INY, DEX, DEY, etc., could also
             #   result in page boundary crossing if the increment or decrement changes the PC in such a way.
             def is_page_crossing?(old_pc)
-                native_mode? && ((old_pc & 0xFF00) != (@pc & 0xFF00))
+                emulation_mode? && ((old_pc & 0xFF00) != (@pc & 0xFF00))
             end
 
             def push_8(value) # to stack
                 if @emulation_mode
                     address = 0x0100 | (@sp & 0xFF)
-                    @memory.access(address, :write, value & 0xFF)
+                    @memory.access(address, :write_register, value & 0xFF)
                     @sp = (@sp - 1) & 0xFF
                 else
                     address = (@stack_bank << 16) | @sp
-                    @memory.access(address, :write, value & 0xFF)
+                    @memory.access(address, :write_register, value & 0xFF)
                     @sp = (@sp - 1) & 0xFFFF
                 end
             end

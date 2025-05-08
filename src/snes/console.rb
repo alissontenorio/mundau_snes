@@ -1,6 +1,7 @@
 require_relative 'memory/mapper'
 require_relative 'cpu/ricoh_5a22'
 require_relative 'ppu/ppu'
+require_relative 'apu/sony_spc700'
 require_relative 'bus/bus'
 require_relative 'cpu/wdc_65816'
 require_relative 'cpu/internal_cpu_registers'
@@ -39,7 +40,10 @@ module Snes
 
             @running = true
             @bus = Snes::Bus::Bus.instance
-            @bus.setup
+            @bus.setup(debug)
+
+            @shutdown_mutex = Mutex.new
+            @shutdown = false
         end
 
         def insert_cartridge(rom_raw)
@@ -82,9 +86,11 @@ module Snes
         def run_cpu
             puts "Run cpu" if @debug
             core = Snes::CPU::WDC65816.new
-            internal_cpu_registers = Snes::CPU::InternalCPURegisters.new
-            @m_map.set_internal_cpu_registers(internal_cpu_registers)
-            core.setup(@m_map, @cartridge.emulation_vectors[:reset], internal_cpu_registers, @debug)
+            # internal_cpu_registers = Snes::CPU::InternalCPURegisters.new
+            # @m_map.set_internal_cpu_registers(internal_cpu_registers)
+            core.setup(@m_map, @cartridge.emulation_vectors[:reset], @debug)
+            sleep_time = (1.0 / 2)
+            # sleep_time = (1.0 / 5)
 
             # test_counter = 0
             while @running
@@ -98,7 +104,6 @@ module Snes
                 # end
 
                 # sleep_ns(279 * core.cycles)
-                sleep_time = (1.0 / FPS)
                 sleep(sleep_time) # To simulate frame rate for CPU
                 # stop if test_counter > 4
             end
@@ -108,15 +113,35 @@ module Snes
             puts "Run ppu" if @debug
             ppu = Snes::PPU::PPU.new
             ppu.setup(@debug)
+            sleep_time = (1.0 / FPS)
             @bus.ppu = ppu
 
             while @running
                 ppu.step
                 @bus.set_frame_buffer(ppu.get_frame_buffer)
                 # sleep_ns(186 * cycles)
-                sleep_time = (1.0 / FPS)
                 sleep(sleep_time) # To simulate frame rate for PPU
             end
+        end
+
+        def run_apu
+            puts "Run apu" if @debug
+            apu = Snes::APU::SPC700.new
+            apu.setup(@debug)
+            sleep_time = (1.0 / FPS)
+            # sleep_callback = -> { sleep(1/2) }
+            @bus.apu = apu
+
+            apu.boot do
+                sleep(sleep_time)
+            end
+
+            # while @running
+            #     # sleep_ns(186 * cycles)
+            #     apu.step do
+            #         sleep(sleep_time)
+            #     end
+            # end
         end
 
         def get_frame_buffer
@@ -124,6 +149,7 @@ module Snes
         end
 
         def execute_cpu_instruction(core)
+            # print "\e[2J\e[f" if @debug # clear screen
             puts core.inspect if @debug
             $logger.debug("--------------------------") if @debug
             $logger.debug("Fetch decode execute start") if @debug
@@ -135,63 +161,141 @@ module Snes
             $stdout.flush if @debug
         end
 
+        def with_thread_cleanup
+            yield
+        ensure
+            turn_off
+        end
+
         def turn_on
+            @shutdown = false
+
             raise CartridgeNotInsertedError.new unless @cartridge
 
-            begin
-                # Start CPU thread
+            # begin
                 cpu_thread = Thread.new {
-                    begin
+                    puts "Starting CPU thread with run_cpu"
+                    with_thread_cleanup do
                         run_cpu
-                    rescue => e
-                        puts "An error occurred while executing instruction: #{e.message}" if @debug
-                        raise e
-                    ensure
-                        turn_off
-                        puts "CPU Thread has finished or was killed." if @debug
                     end
+                    # begin
+                    #     puts "Starting CPU thread with run_cpu"
+                    #     run_cpu
+                    # rescue => e
+                    #     puts "An error occurred while executing instruction: #{e.message}" if @debug
+                    #     raise e
+                    # rescue => e
+                    #     # puts "An error occurred while executing instruction: #{e.message}" if @debug
+                    #     turn_off
+                    #     raise e if @debug
+                    # ensure
+                    #     # turn_off
+                    #     puts "CPU Thread has finished or was killed." if @debug
+                    # end
                 }
 
-                # Start PPU thread
                 ppu_thread = Thread.new {
-                    begin
+                    puts "Starting PPU thread with run_ppu"
+                    with_thread_cleanup do
                         run_ppu
-                    ensure
-                        turn_off
-                        puts "PPU Thread has finished or was killed." if @debug
                     end
+                    # begin
+                    #     puts "Starting PPU thread with run_ppu"
+                    #     run_ppu
+                    # rescue => e
+                    #     # puts "An error occurred while executing instruction: #{e.message}" if @debug
+                    #     turn_off
+                    #     raise e if @debug
+                    # ensure
+                    #     # turn_off
+                    #     puts "PPU Thread has finished or was killed." if @debug
+                    # end
+                }
+
+                apu_thread = Thread.new {
+                    puts "Starting APU thread with run_apu"
+                    with_thread_cleanup do
+                        run_apu
+                    end
+                    # begin
+                    #     puts "Starting APU thread with run_apu"
+                    #     run_apu
+                    # rescue => e
+                    #     # puts "An error occurred while executing instruction: #{e.message}" if @debug
+                    #     turn_off
+                    #     raise e if @debug
+                    # ensure
+                    #     # turn_off
+                    #     puts "APU Thread has finished or was killed." if @debug
+                    # end
                 }
 
                 cpu_thread.report_on_exception = true
                 ppu_thread.report_on_exception = true
+                apu_thread.report_on_exception = true
                 cpu_thread.abort_on_exception = false
                 cpu_thread.name = "CPU Thread"
                 ppu_thread.abort_on_exception = false
                 ppu_thread.name = "PPU Thread"
+                apu_thread.abort_on_exception = false
+                apu_thread.name = "APU Thread"
 
                 # cpu_thread.join
                 # ppu_thread.join
-            rescue => e
-                puts "An error occurred while starting threads: #{e.message}" if @debug
-                # puts "An error occurred while starting threads:"
-                puts e.backtrace if @debug
-                stop
-            end
+                # apu_thread.join
+            # rescue => e
+            #     puts "An error occurred while starting threads: #{e.message}" if @debug
+            #     # puts "An error occurred while starting threads:"
+            #     puts e.backtrace if @debug
+            #     stop
+            # end
         end
 
         def turn_off
-            Thread.list.each do |thread|
-                thread.kill if thread.alive? && thread.name == 'PPU Thread' && thread != Thread.current
-                thread.kill if thread.alive? && thread.name == 'CPU Thread' && thread != Thread.current
+            @shutdown_mutex.synchronize do
+                return if @shutdown
+                @shutdown = true
+
+                Thread.list.each do |thread|
+                    puts "#{thread.name} killed." if @debug and thread.name
+                    next if thread == Thread.current
+                    case thread.name
+                    when 'PPU Thread', 'CPU Thread', 'APU Thread'
+                        if thread.alive?
+                            begin
+                                # Give thread a chance to finish/log (e.g., exception printing)
+                                thread.join(0.2)
+                            rescue => e
+                                # raise e
+                                puts "Error while joining thread #{thread.name}: #{e.message}" if @debug
+                            ensure
+                                thread.kill if thread.alive? # force kill if it didn’t finish
+                            end
+                        end
+                    end
+                end
             end
 
             @cartridge = nil
             @m_map = nil
         end
+
+        # def turn_off
+        #     sleep(0.1) # Wait the except message to be printed
+        #     Thread.list.each do |thread|
+        #         thread.kill if thread.alive? && thread.name == 'PPU Thread' && thread != Thread.current
+        #         thread.kill if thread.alive? && thread.name == 'CPU Thread' && thread != Thread.current
+        #         thread.kill if thread.alive? && thread.name == 'APU Thread' && thread != Thread.current
+        #     end
+        #
+        #     @cartridge = nil
+        #     @m_map = nil
+        # end
 
         def remove_cartridge
             @cartridge = nil
             @m_map = nil
+            @shutdown = false
         end
     end
 end

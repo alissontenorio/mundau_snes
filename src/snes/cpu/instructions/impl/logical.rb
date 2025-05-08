@@ -1,11 +1,5 @@
-module Snes
-    module CPU
-        module Instructions
-            module Logical
-                # AND
-                # EOR
-                # ORA
-            end
-        end
-    end
+module Snes::CPU::Instructions::Logical
+    # AND
+    # EOR
+    # ORA
 end

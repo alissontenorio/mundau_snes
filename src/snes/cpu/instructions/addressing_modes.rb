@@ -61,6 +61,8 @@ module Snes
 
                 # Documented but needs to check
                 ACCUMULATOR = :accumulator
+
+                freeze
             end
         end
     end

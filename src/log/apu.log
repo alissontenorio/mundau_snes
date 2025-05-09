@@ -1,0 +1,12 @@
+# Logfile created on 2025-05-09 01:23:45 -0300 by logger.rb/v1.5.0
+DEBUG -- : [APU Thread] Entering SPC700.boot
+DEBUG -- : APU PC=FFC0 A=00 X=00 Y=00 SP=00EF YA=0000 PSW=02
+DEBUG -- : 0xcd - Operation mov_x_imm
+DEBUG -- : APU PC=FFC2 A=00 X=EF Y=00 SP=00EF YA=0000 PSW=80
+DEBUG -- : 0xbd - Operation mov_sp_x
+DEBUG -- : APU PC=FFC3 A=00 X=EF Y=00 SP=00EF YA=0000 PSW=80
+DEBUG -- : 0xe8 - Operation mov_a_imm
+DEBUG -- : APU PC=FFC5 A=00 X=EF Y=00 SP=00EF YA=0000 PSW=02
+DEBUG -- : 0xc6 - Operation mov_x_a
+DEBUG -- : Writing value 0x00 to address 0x0000EF
+DEBUG -- : APU PC=FFC6 A=00 X=EF Y=00 SP=00EF YA=0000 PSW=02

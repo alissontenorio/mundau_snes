@@ -40,7 +40,7 @@ module Snes
 
             @running = true
             @bus = Snes::Bus::Bus.instance
-            @bus.setup(debug)
+            @bus.setup(@debug)
 
             @shutdown_mutex = Mutex.new
             @shutdown = false
@@ -89,6 +89,7 @@ module Snes
             # internal_cpu_registers = Snes::CPU::InternalCPURegisters.new
             # @m_map.set_internal_cpu_registers(internal_cpu_registers)
             core.setup(@m_map, @cartridge.emulation_vectors[:reset], @debug)
+            # core.setup(@m_map, @cartridge.emulation_vectors[:reset], false)
             sleep_time = (1.0 / FPS)
             # sleep_time = (1.0 / 5)
 
@@ -112,7 +113,8 @@ module Snes
         def run_ppu
             puts "Run ppu" if @debug
             ppu = Snes::PPU::PPU.new
-            ppu.setup(@debug)
+            # ppu.setup(@debug)
+            ppu.setup(false)
             sleep_time = (1.0 / FPS)
             @bus.ppu = ppu
 
@@ -134,6 +136,7 @@ module Snes
 
             apu.boot do
                 sleep(sleep_time)
+                $stdout.flush if @debug
             end
 
             # while @running
@@ -151,13 +154,13 @@ module Snes
         def execute_cpu_instruction(core)
             # print "\e[2J\e[f" if @debug # clear screen
             puts core.inspect if @debug
-            $logger.debug("--------------------------") if @debug
-            $logger.debug("Fetch decode execute start") if @debug
-            $logger.debug("#{core.inspect}") if @debug
+            $cpu_logger.debug("--------------------------") if @debug
+            $cpu_logger.debug("Fetch decode execute start") if @debug
+            $cpu_logger.debug("#{core.inspect}") if @debug
             core.fetch_decode_execute
-            $logger.debug("Cycles: #{core.cycles} ") if @debug
+            $cpu_logger.debug("Cycles: #{core.cycles} ") if @debug
             puts if @debug
-            $logger.debug(" ") if @debug
+            $cpu_logger.debug(" ") if @debug
             $stdout.flush if @debug
         end
 
@@ -172,37 +175,36 @@ module Snes
 
             raise CartridgeNotInsertedError.new unless @cartridge
 
-            # begin
-                cpu_thread = Thread.new {
-                    puts "Starting CPU thread with run_cpu"
-                    with_thread_cleanup do
-                        run_cpu
-                    end
-                }
+            cpu_thread = Thread.new {
+                puts "Starting CPU thread with run_cpu"
+                with_thread_cleanup do
+                    run_cpu
+                end
+            }
 
-                ppu_thread = Thread.new {
-                    puts "Starting PPU thread with run_ppu"
-                    with_thread_cleanup do
-                        run_ppu
-                    end
-                }
+            ppu_thread = Thread.new {
+                puts "Starting PPU thread with run_ppu"
+                with_thread_cleanup do
+                    run_ppu
+                end
+            }
 
-                apu_thread = Thread.new {
-                    puts "Starting APU thread with run_apu"
-                    with_thread_cleanup do
-                        run_apu
-                    end
-                }
+            apu_thread = Thread.new {
+                puts "Starting APU thread with run_apu"
+                with_thread_cleanup do
+                    run_apu
+                end
+            }
 
-                cpu_thread.report_on_exception = true
-                ppu_thread.report_on_exception = true
-                apu_thread.report_on_exception = true
-                cpu_thread.abort_on_exception = false
-                cpu_thread.name = "CPU Thread"
-                ppu_thread.abort_on_exception = false
-                ppu_thread.name = "PPU Thread"
-                apu_thread.abort_on_exception = false
-                apu_thread.name = "APU Thread"
+            cpu_thread.report_on_exception = true
+            ppu_thread.report_on_exception = true
+            apu_thread.report_on_exception = true
+            cpu_thread.abort_on_exception = false
+            cpu_thread.name = "CPU Thread"
+            ppu_thread.abort_on_exception = false
+            ppu_thread.name = "PPU Thread"
+            apu_thread.abort_on_exception = false
+            apu_thread.name = "APU Thread"
         end
 
         def turn_off
@@ -211,10 +213,13 @@ module Snes
                 @shutdown = true
 
                 Thread.list.each do |thread|
-                    puts "#{thread.name} killed." if @debug and thread.name
-                    next if thread == Thread.current
+                    if thread == Thread.current
+                        puts "\e[31m#{thread.name} killed\e[0m - Original Raise" if @debug and thread.name
+                        next
+                    end
+
                     case thread.name
-                    when 'PPU Thread', 'CPU Thread', 'APU Thread'
+                    when 'CPU Thread', 'PPU Thread', 'APU Thread'
                         if thread.alive?
                             begin
                                 # Give thread a chance to finish/log (e.g., exception printing)
@@ -224,6 +229,7 @@ module Snes
                                 puts "Error while joining thread #{thread.name}: #{e.message}" if @debug
                             ensure
                                 thread.kill if thread.alive? # force kill if it didn’t finish
+                                puts "\e[31m#{thread.name} killed\e[0m" if @debug and thread.name
                             end
                         end
                     end

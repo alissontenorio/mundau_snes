@@ -133,8 +133,8 @@ module Snes
                 puts "\e[33m0x#{opcode.to_s(16).upcase}\e[0m - #{@current_opcode_data}" if @debug
                 # opcode_something = opcode_data.disassemble
                 handler = @current_opcode_data.handler
-                $logger.debug("0x#{opcode.to_s(16)} - Operation #{handler}") if @debug
-                # $logger.debug("Operation #{handler} : #{@pc.to_s(16)}") if @debug
+                $cpu_logger.debug("0x#{opcode.to_s(16)} - Operation #{handler}") if @debug
+                # $cpu_logger.debug("Operation #{handler} : #{@pc.to_s(16)}") if @debug
             end
 
             def get_opcode_data(opcode)
@@ -163,18 +163,22 @@ module Snes
                 @cycles += is_page_crossing?(old_pc) ? 1 : 0
             end
 
-            def read_8(address)
+            def read_8(address) # ToDo: Refactor to read_byte
                 value = @memory.access(address & 0xFFFFFF, :read)
                 # puts "Reading value 0x%02X from address 0x%06X" % [value, address] if @debug
                 value
             end
 
-            def read_16(address)
+            def read_16(address) # ToDo: Refactor to read_word
                 lo = read_8(address)
                 address = (address + 1) & 0xFFFF # Increment PC by 1
                 hi = read_8(address)
                 (hi << 8) | lo # Little Endian Word Fetch from Instruction Stream
             end
+
+            # def read_24(address) # ToDo: Refactor to read_long_address
+            #
+            # end
 
             def write_8(address, value)
                 # puts "Writing value 0x%02X to address 0x%06X" % [value, address] if @debug

@@ -52,24 +52,38 @@ module Snes::APU
             @cycles = 0
 
             @memory = Snes::APU::Memory.new
+            @memory.setup(@debug)
 
             @opcodes_table = Snes::APU::Instructions::Opcodes::TABLE
             @current_opcode_data = nil
+        end
+
+        def read(address)
+            @memory.read(address)
+            $apu_logger.debug("Reading value 0x%02X from address 0x%06X" % [@memory.read(address), address]) if @debug
+        end
+
+        def write(address, value)
+            $apu_logger.debug("Writing value 0x%02X to address 0x%06X" % [value, address]) if @debug
+            @memory.write(address, value)
         end
 
         def debug_opcode_data(opcode)
             puts "\e[32mAPU\e[0m - \e[33m0x#{opcode.to_s(16).upcase}\e[0m - #{@current_opcode_data}" if @debug
             # opcode_something = opcode_data.disassemble
             handler = @current_opcode_data.handler
-            $logger.debug("0x#{opcode.to_s(16)} - Operation #{handler}") if @debug
+            $apu_logger.debug("0x#{opcode.to_s(16)} - Operation #{handler}") if @debug
             # $logger.debug("Operation #{handler} : #{@pc.to_s(16)}") if @debug
         end
 
         def boot
-            puts "[#{Thread.current.name}] Entering SPC700.boot"
+            $apu_logger.debug("[#{Thread.current.name}] Entering SPC700.boot") if @debug
 
             loop do
-                puts self.inspect if @debug
+                if @debug
+                    puts self.inspect
+                    $apu_logger.debug(self.inspect)
+                end
                 @cycles = 0
                 @pc &= 0xFFFF
                 opcode = Memory::IPL_ROM[@pc - 0xFFC0]
@@ -93,18 +107,26 @@ module Snes::APU
             puts self.inspect if @debug
             @cycles = 0
             @pc &= 0xFFFF
+            # get opcode
+            # break?
+            @current_opcode_data = @opcodes_table[opcode]
+            raise NotImplementedError, "Opcode 0x%02X not implemented" % opcode unless @current_opcode_data
+            debug_opcode_data(opcode)
+            increment_pc!
+            send(@current_opcode_data.handler) # Call Instruction
+            @cycles += @current_opcode_data.base_cycles
             yield if block_given?
         end
 
         def read_byte(address)
             # @memory.read(address & 0xFFFF)  # 64KB memory wrapping
-            value = @memory.read(address)  # 64KB memory wrapping
+            value = @memory.read(address & 0xFFFF)  # 64KB memory wrapping
             # puts "Reading value 0x%02X from address 0x%06X" % [value, address] if @debug
             value
         end
 
         def inspect
-            "APU PC=%04X A=%02X X=%02X Y=%02X SP=%04X YA=%04X Psw=%02X" %
+            "APU PC=%04X A=%02X X=%02X Y=%02X SP=%02X YA=%04X PSW=%02X" %
                 [@pc, @a, @x, @y, @sp, @ya, @psw]
             # reg = @registers.all
             # "APU PC=%04X A=%02X X=%02X Y=%02X SP=%04X YA=%04X Psw=%02X - Registers: F4=%02X F5=%02X F6=%02X F7=%02X" %

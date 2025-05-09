@@ -1,16 +1,39 @@
 module Snes
     module APU
         module Instructions
-            # implement this
+            # implement this, current to implement: 1d
             # cd, bd, e8, c6, 1d, d0, 8f, 78, 2f, eb, 7e, e4, cb, d7, fc, ab, 10, ba, da, c4, dd, 5d, 1f, c0
 
-            # Instruction   |  Opcode    |   In 65816   |  Bytes  |  Cycles  |     Flags   |  Operation
-            # MOV X, #imm	       CD	     LDX #imm          2	      2	     N-----Z-      X <- imm
-            def mov_x_immediate
-                value = read_byte(@pc + 1)     # Fetch immediate value (next byte after opcode)
+            # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |  Operation  | Addressing Mode
+            # MOV X, #imm	     0xCD	   LDX #imm          2	      2	      N-----Z-      X <- imm          Immediate
+            def mov_x_imm
+                value = read_byte(@pc)     # Fetch immediate value (next byte after opcode)
+                increment_pc!
+
                 @x = value               # Set X register
                 set_nz_flags(value)
-                increment_pc!(2)
+            end
+
+            # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |  Operation  | Addressing Mode
+            # MOV A, #imm       0xE8       LDA #imm          2         2     N.....Z.      A <- imm          Immediate
+            def mov_a_imm
+                value = read_byte(@pc)
+                increment_pc!
+
+                @a = value
+                set_nz_flags(value)
+            end
+
+            # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |  Operation  | Addressing Mode
+            # MOV	SP, X	     0xBD	        TXS          1	       2	  --------      SP <- X     Implied type 1 (INDIRECT = (X)
+            def mov_sp_x
+                @sp = @x
+            end
+
+            # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |  Operation  | Addressing Mode
+            # MOV (X), A        0xC6                        1           4     ........      A -> (X)    Implied type 1 (INDIRECT = (X)
+            def mov_x_a
+                write(@x, @a)
             end
         end
     end

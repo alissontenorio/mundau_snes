@@ -55,7 +55,9 @@ module Snes::APU
         end
 
         def read(address)
-            access(address) { |mem, addr| mem[addr] }
+            value = access(address) { |mem, addr| mem[addr] }
+            puts "APU - Reading value #{value} from address 0x%06X" % address if @debug
+            value
         end
 
         def write(address, value)
@@ -64,6 +66,7 @@ module Snes::APU
                 return
             end
 
+            puts "APU - Writing value 0x%02X to address 0x%06X" % [value, address] if @debug
             access(address) { |mem, addr| mem[addr] = value }
         end
 
@@ -103,6 +106,21 @@ module Snes::APU
         end
 
         def access_register(address)
+            # Address 	Description 	R/W
+            # $00F0 	Unknown 	?
+            # $00F1 	Control 	W
+            # $00F2 	DSP Read/Write Address 	R/W
+            # $00F3 	DSP Read/Write Data 	R/W
+            # $00F4 	Port 0 	R/W
+            # $00F5 	Port 1 	R/W
+            # $00F6 	Port 2 	R/W
+            # $00F7 	Port 3 	R/W
+            # $00FA 	Timer Setting 0 	W
+            # $00FB 	Timer Setting 1 	W
+            # $00FC 	Timer Setting 2 	W
+            # $00FA 	Timer Counter 0 	R
+            # $00FB 	Timer Counter 1 	R
+            # $00FC 	Timer Counter 2 	R
             yield(@registers, address)
         end
 

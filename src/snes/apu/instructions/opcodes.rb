@@ -24,7 +24,12 @@ module Snes::APU::Instructions::Opcodes
     # cd, bd, e8, c6, 1d, d0, 8f, 78, 2f, eb, 7e, e4, cb, d7, fc, ab, 10, ba, da, c4, dd, 5d, 1f, c0
     TABLE = {
         # 0x18 => Opcode.new(:clc, 'Clear Carry Flag', AddressingMode::IMPLIED, 0b0000_0001, 1, 2),
-        0xCD => Opcode.new(:mov_x_immediate, 'MOV X, #imm', AddressingMode::IMMEDIATE, 0b1000_0010, 2, 2),
+        0xCD => Opcode.new(:mov_x_imm, 'MOV X, #imm', AddressingMode::IMMEDIATE, 0b1000_0010, 2, 2),
+        0xE8 => Opcode.new(:mov_a_imm, 'MOV A, #imm', AddressingMode::IMMEDIATE, 0b1000_0010, 2, 2),
+        0xC6 => Opcode.new(:mov_x_a, 'MOV (X), A', AddressingMode::IMPLIED, 0b0000_000, 1, 2),
+
+
+        0xBD => Opcode.new(:mov_sp_x, 'MOV Y, #imm', AddressingMode::IMPLIED, 0b0000_000, 1, 2), # Implied (type 1) -
     }
 end
 

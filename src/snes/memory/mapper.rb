@@ -30,7 +30,7 @@ module Snes
             # end
 
             def access(address, operation, value = nil)
-                $logger.debug(" ") if @debug
+                $cpu_logger.debug(" ") if @debug
 
                 unless [:read, :write_register].include?(operation)
                     raise "Invalid operation: #{operation}. Use :read or :write."
@@ -44,20 +44,20 @@ module Snes
                 case bank_type_for(bank)
                 when :system
                     if @debug
-                        $logger.debug("Bank System - #{operation.to_s} address 0x#{address.to_s(16).upcase}")
-                        # $logger.debug("Cartridge type: #{@cartridge_type}")
+                        $cpu_logger.debug("Bank System - #{operation.to_s} address 0x#{address.to_s(16).upcase}")
+                        # $cpu_logger.debug("Cartridge type: #{@cartridge_type}")
                     end
                     access_bank_system(bank, offset, operation, value)
                 when :rom
                     if @debug
-                        $logger.debug("Bank Rom - #{operation.to_s} address 0x#{address.to_s(16).upcase}")
-                        # $logger.debug("Cartridge type: #{@cartridge_type}")
+                        $cpu_logger.debug("Bank Rom - #{operation.to_s} address 0x#{address.to_s(16).upcase}")
+                        # $cpu_logger.debug("Cartridge type: #{@cartridge_type}")
                     end
                     access_bank_rom(bank, offset, operation, value)
                 when :ram
                     if @debug
-                        $logger.debug("Bank Ram - #{operation.to_s} address 0x#{address.to_s(16).upcase}")
-                        # $logger.debug("Cartridge type: #{@cartridge_type}")
+                        $cpu_logger.debug("Bank Ram - #{operation.to_s} address 0x#{address.to_s(16).upcase}")
+                        # $cpu_logger.debug("Cartridge type: #{@cartridge_type}")
                     end
                     access_bank_ram(bank, offset, operation, value)
                 else
@@ -134,7 +134,7 @@ module Snes
             # Memory Access Specifics
 
             def access_sram(bank, offset, operation, value)
-                $logger.debug("#{__method__}") if @debug
+                $cpu_logger.debug("#{__method__}") if @debug
 
                 case @cartridge_type
                 when :hirom
@@ -160,7 +160,7 @@ module Snes
             end
 
             def access_ram(bank, offset, operation, value)
-                $logger.debug("#{__method__}\n") if @debug
+                $cpu_logger.debug("#{__method__}\n") if @debug
 
                 ram_pos = position_in_contiguous_memory(bank, offset, 0x7E, 0x0, 0x10_000)
 
@@ -172,7 +172,7 @@ module Snes
             end
 
             def access_low_ram(bank, offset, operation, value)
-                $logger.debug("#{__method__}\n") if @debug
+                $cpu_logger.debug("#{__method__}\n") if @debug
 
                 if operation == :read
                     @ram[offset]
@@ -182,7 +182,7 @@ module Snes
             end
 
             def access_controller(bank, offset, operation, value)
-                $logger.debug("#{__method__}\n") if @debug
+                $cpu_logger.debug("#{__method__}\n") if @debug
                 raise NotImplementedError, "#{__method__} is not yet implemented for controller"
             end
 
@@ -196,20 +196,20 @@ module Snes
             end
 
             def access_dma(bank, offset, operation, value)
-                $logger.debug("#{__method__}\n") if @debug
+                $cpu_logger.debug("#{__method__}\n") if @debug
                 raise NotImplementedError, "#{__method__} is not yet implemented for dma"
             end
 
             def access_rom(bank, offset, operation, value)
-                $logger.debug("#{__method__}\n") if @debug
+                $cpu_logger.debug("#{__method__}\n") if @debug
                 rom_addr = rom_address(bank, offset)
-                # $logger.debug("#{rom_addr.to_s(16)}") if @debug
+                # $cpu_logger.debug("#{rom_addr.to_s(16)}") if @debug
 
                 @rom[rom_addr].ord if operation == :read
             end
 
             def access_ppu(bank, offset, operation, value)
-                $logger.debug("#{__method__}\n") if @debug
+                $cpu_logger.debug("#{__method__}\n") if @debug
 
                 if operation == :read
                     @bus.read_ppu(offset)
@@ -221,7 +221,7 @@ module Snes
             end
 
             def access_apu(bank, offset, operation, value)
-                $logger.debug("#{__method__}\n") if @debug
+                $cpu_logger.debug("#{__method__}\n") if @debug
 
                 if operation == :read
                     @bus.read_apu(offset)

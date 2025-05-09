@@ -25,17 +25,27 @@ def set_logger
     File.delete(log_file) if File.exist?(log_file)
 
     # Create logger that writes to file
-    # $logger = Logger.new(STDOUT)
-    $logger = Logger.new(log_file)
-    $logger.level = Logger::DEBUG
+    # $cpu_logger = Logger.new(STDOUT)
+    $cpu_logger = Logger.new(log_file)
+    $cpu_logger.level = Logger::DEBUG
 
     # Custom log message format
-    $logger.formatter = proc do |severity, datetime, progname, msg|
+    $cpu_logger.formatter = proc do |severity, datetime, progname, msg|
         "#{severity} -- : #{msg}\n"
     end
 
     # Ensure flushing of logs after each log entry
-    $logger.instance_variable_get(:@logdev).dev.sync = true
+    $cpu_logger.instance_variable_get(:@logdev).dev.sync = true
+
+    # APU-specific logger
+    apu_log_file = "#{log_directory}/apu.log"
+    File.delete(apu_log_file) if File.exist?(apu_log_file)
+    $apu_logger = Logger.new(apu_log_file)
+    $apu_logger.level = Logger::DEBUG
+    $apu_logger.formatter = proc do |severity, datetime, progname, msg|
+        "#{severity} -- : #{msg}\n"
+    end
+    $apu_logger.instance_variable_get(:@logdev).dev.sync = true
 end
 
 set_logger

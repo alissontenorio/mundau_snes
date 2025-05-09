@@ -1,5 +1,4 @@
-# Logfile created on 2025-05-08 00:42:18 -0300 by logger.rb/v1.5.0
-DEBUG -- : 0xcd - Operation mov_x_immediate
+# Logfile created on 2025-05-09 01:23:45 -0300 by logger.rb/v1.5.0
 DEBUG -- : --------------------------
 DEBUG -- : Fetch decode execute start
 DEBUG -- : CPU PC=008000 A=00 X=00 Y=00 SP=01FF DP=00 DBR=00 Emulation=true Cycles=0 P=34 SBR=00 - N=0 V=0 M=1 X=1 D=0 I=1 Z=0 C=0
@@ -95,6 +94,4 @@ DEBUG -- : access_rom
 DEBUG -- :  
 DEBUG -- : Bank System - write_register address 0x2140
 DEBUG -- : access_apu
-
-DEBUG -- : APU Register - Write_register in address 2140 value 0 - APUIO0 - APU IO Registers
 

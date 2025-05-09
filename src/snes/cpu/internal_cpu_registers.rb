@@ -72,7 +72,7 @@ module Snes
                 def debug_print(operation, address, value = nil)
                     info = info(address)
                     write = value ? (" value " + value.to_s(16)) : ''
-                    $logger.debug("InternalCPU Register - #{operation.to_s.capitalize} in address #{address.to_s(16)}#{write} - #{info[:name]} - #{info[:description]}\n")
+                    $cpu_logger.debug("InternalCPU Register - #{operation.to_s.capitalize} in address #{address.to_s(16)}#{write} - #{info[:name]} - #{info[:description]}\n")
                     puts "\e[35mInternalCPU\e[0m register - #{operation.to_s.capitalize}#{write} in address #{address.to_s(16)} - \e[35m#{info[:name]}\e[0m - #{info[:description]}"
                 end
 

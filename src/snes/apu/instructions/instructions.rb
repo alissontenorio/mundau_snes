@@ -76,7 +76,6 @@ module Snes
 
                 value = read_byte(dp)
 
-                # result = (value - imm) & 0xFF
                 set_p_flag(:c, value >= imm)
                 set_nz_flags(value - imm)
             end

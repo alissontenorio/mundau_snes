@@ -42,12 +42,12 @@ module Snes::PPU
         end
 
         # Method to write a value to a register
-        def write_register(address, value)
+        def write(address, value)
             # puts "PPU write register: #{address.to_s(16)} = #{value.to_s(16)}" if address == 0x2100
             # Bits 0–3 (lowest 4 bits): set screen brightness (from 0 to 15).
             # Bit 7 (highest bit): force blank (1 = force screen blank, 0 = normal rendering).
             # Even though the screen is visually blanked, backgrounds, sprites, scrolling, etc., continue to update internally — they're just not shown until you clear the force blank bit.
-            @registers.access(:write_register, address, value)
+            @registers.access(:write, address, value)
 
             if address == 0x2100
                 handle_inidisp(value)
@@ -111,7 +111,7 @@ module Snes::PPU
             # Rendering process, depends on scanline and mode
             if @scanline >= 240 # Or maybe 239?
                 # V-blank period; can trigger specific actions like updating display registers
-                write_register(0x2100, 1)  # Example: update screen display register
+                write(0x2100, 1)  # Example: update screen display register
             else
                 # Handle normal rendering for backgrounds and sprites
                 handle_sprite_rendering
@@ -123,7 +123,7 @@ module Snes::PPU
         # Handle the V-blank process, which occurs when the scanline reaches 240+
         def handle_vblank
             # Handle actions during V-blank (scanline >= 240)
-            write_register(0x213E, 1)  # For example, set STAT77 to indicate V-blank
+            write(0x213E, 1)  # For example, set STAT77 to indicate V-blank
             handle_interrupts
         end
 
@@ -148,22 +148,22 @@ module Snes::PPU
         def render_sprite(sprite)
             # Actual sprite rendering logic (simplified)
             # Here we just simulate writing to the OAM data register
-            write_register(0x2104, sprite[:data])
+            write(0x2104, sprite[:data])
         end
 
         def handle_background_rendering
             # Handle background rendering logic here for BG1, BG2, etc.
             # For example, we can update the background scroll registers for BG1, BG2, etc.
             @bg_scroll.each do |bg, scroll|
-                write_register(0x210D, scroll[:x])  # Write horizontal scroll position
-                write_register(0x210E, scroll[:y])  # Write vertical scroll position
+                write(0x210D, scroll[:x])  # Write horizontal scroll position
+                write(0x210E, scroll[:y])  # Write vertical scroll position
             end
         end
 
         def handle_palettes
             # Example: Manage palette updates (simplified)
             if @scanline == 240
-                write_register(0x2121, @palette[0])  # Write first color to the palette register
+                write(0x2121, @palette[0])  # Write first color to the palette register
             end
         end
 
@@ -178,7 +178,7 @@ module Snes::PPU
         # Update PPU status registers as needed (e.g., for certain scanlines)
         def update_ppu_status
             # For instance, update STAT77 to reflect that we're in the V-blank
-            write_register(0x213E, 1)
+            write(0x213E, 1)
         end
 
         def handle_interrupts

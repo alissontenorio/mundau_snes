@@ -41,10 +41,10 @@ module Snes::CPU::Instructions::DataMovement
 
         if status_p_flag?(:m) # 8-bit accumulator mode
             value = @a & 0x00FF  # Use only the low 8 bits of A
-            write_8(address, value)
+            write_byte(address, value)
         else # 16-bit accumulator mode
             value = @a & 0xFFFF  # Use full 16 bits of A
-            write_16(address, value)
+            write_word(address, value)
 
             @cycles += 1
         end
@@ -62,9 +62,9 @@ module Snes::CPU::Instructions::DataMovement
         address = fetch_data
 
         if status_p_flag?(:m)
-            write_8(address, 0x00) # emulation mode
+            write_byte(address, 0x00) # emulation mode
         else
-            write_16(address, 0x0000) # native mode
+            write_word(address, 0x0000) # native mode
             @cycles += 1
         end
     end

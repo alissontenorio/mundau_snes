@@ -51,6 +51,13 @@ module Snes
 
             @shutdown_mutex = Mutex.new
             @shutdown = false
+
+            @start_mutex = Mutex.new
+            @start_condition = ConditionVariable.new
+            @cpu_ready = false
+            @ppu_ready = false
+            @apu_ready = false
+            @bus_ready = false
         end
 
         def insert_cartridge(rom_raw)
@@ -91,14 +98,17 @@ module Snes
         # end
 
         def run_cpu
+
             puts "Run cpu" if @debug
             core = Snes::CPU::WDC65816.new
             # internal_cpu_registers = Snes::CPU::InternalCPURegisters.new
             # @m_map.set_internal_cpu_registers(internal_cpu_registers)
-            core.setup(@m_map, @cartridge.emulation_vectors[:reset], @debug_cpu)
+            core.setup(@m_map, @cartridge.emulation_vectors, @cartridge.native_vectors, @debug_cpu)
             # core.setup(@m_map, @cartridge.emulation_vectors[:reset], false)
             sleep_time = (1.0 / FPS)
             # sleep_time = (1.0 / 5)
+
+            wait_until_ready # Wait all threads setup
 
             # test_counter = 0
             while @running
@@ -112,7 +122,9 @@ module Snes
                 # end
 
                 # sleep_ns(279 * core.cycles)
+
                 sleep(sleep_time) # To simulate frame rate for CPU
+
                 # stop if test_counter > 4
             end
         end
@@ -123,6 +135,8 @@ module Snes
             ppu.setup(@debug_ppu)
             sleep_time = (1.0 / FPS)
             @bus.ppu = ppu
+
+            wait_until_ready # Wait all threads setup
 
             while @running
                 ppu.step
@@ -140,9 +154,11 @@ module Snes
             # sleep_callback = -> { sleep(1/2) }
             @bus.apu = apu
 
+            wait_until_ready # Wait all threads setup
+
             apu.boot do
                 sleep(sleep_time)
-                $stdout.flush if @debug_apu
+                # $stdout.flush if @debug_apu
             end
 
             # while @running
@@ -167,9 +183,8 @@ module Snes
             end
             core.fetch_decode_execute
             if @debug_cpu
-                $cpu_logger.debug("Cycles: #{core.cycles} ")
+                $cpu_logger.debug("Cycles: #{core.cycles}\n")
                 puts
-                $cpu_logger.debug(" ")
                 $stdout.flush
             end
         end
@@ -187,6 +202,7 @@ module Snes
 
             cpu_thread = Thread.new {
                 puts "Starting CPU thread with run_cpu"
+
                 with_thread_cleanup do
                     run_cpu
                 end
@@ -194,6 +210,7 @@ module Snes
 
             ppu_thread = Thread.new {
                 puts "Starting PPU thread with run_ppu"
+
                 with_thread_cleanup do
                     run_ppu
                 end
@@ -201,6 +218,7 @@ module Snes
 
             apu_thread = Thread.new {
                 puts "Starting APU thread with run_apu"
+
                 with_thread_cleanup do
                     run_apu
                 end
@@ -215,6 +233,18 @@ module Snes
             ppu_thread.name = "PPU Thread"
             apu_thread.abort_on_exception = false
             apu_thread.name = "APU Thread"
+
+            Thread.new do
+                @start_mutex.synchronize do
+                    # Set all threads to ready (example: mark readiness flags to true)
+                    @cpu_ready = true
+                    @ppu_ready = true
+                    @apu_ready = true
+
+                    # Once all threads are ready, signal them to continue
+                    @start_condition.broadcast
+                end
+            end
         end
 
         def turn_off
@@ -254,6 +284,16 @@ module Snes
             @cartridge = nil
             @m_map = nil
             @shutdown = false
+        end
+
+        private
+
+        def wait_until_ready
+            # Wait until all threads are ready
+            @start_mutex.synchronize do
+                # Each thread will wait until all readiness flags are true
+                @start_condition.wait(@start_mutex) until @cpu_ready && @ppu_ready && @apu_ready
+            end
         end
     end
 end

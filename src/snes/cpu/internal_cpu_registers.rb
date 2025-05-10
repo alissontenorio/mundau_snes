@@ -51,12 +51,12 @@ module Snes
             class << self
                 def access(operation, address, value = nil)
                     reg = @registers[address]
-                    raise "Invalid CPU register address: 0x#{address.to_s(16).upcase}" unless reg
+                    raise CPUInvalidRegisterAddress.new(address) unless reg
 
                     case operation
                     when :read
                         reg.value
-                    when :write_register
+                    when :write
                         reg.value = value & 0xFF
                     else
                         raise "Unknown operation: #{operation}"
@@ -72,7 +72,7 @@ module Snes
                 def debug_print(operation, address, value = nil)
                     info = info(address)
                     write = value ? (" value " + value.to_s(16)) : ''
-                    $cpu_logger.debug("InternalCPU Register - #{operation.to_s.capitalize} in address #{address.to_s(16)}#{write} - #{info[:name]} - #{info[:description]}\n")
+                    $cpu_logger.debug("InternalCPU Register - #{operation.to_s.capitalize} in address #{address.to_s(16)}#{write} - #{info[:name]} - #{info[:description]}")
                     puts "\e[35mInternalCPU\e[0m register - #{operation.to_s.capitalize}#{write} in address #{address.to_s(16)} - \e[35m#{info[:name]}\e[0m - #{info[:description]}"
                 end
 

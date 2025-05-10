@@ -92,7 +92,7 @@ module Snes
                     case operation
                     when :read
                         reg.value
-                    when :write_register
+                    when :write
                         reg.value = value & 0xFF
                     else
                         raise "Unknown operation: #{operation}"

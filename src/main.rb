@@ -17,7 +17,8 @@ chrono_trigger_rom_filepath = "/mnt/c/Users/Alisson/dev/pessoal/mundau_snes/roms
 star_ocean_rom_filepath = "/mnt/c/Users/Alisson/dev/pessoal/mundau_snes/roms/S-DD1/Star Ocean (J) [!].smc"
 
 def set_logger
-    log_directory = 'log'
+    log_directory = File.join(__dir__, '..', 'log')
+
     FileUtils.mkdir_p(log_directory) unless Dir.exist?(log_directory)
 
     # Set up log file

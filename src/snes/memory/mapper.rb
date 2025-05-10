@@ -32,7 +32,7 @@ module Snes
             def access(address, operation, value = nil)
                 $cpu_logger.debug(" ") if @debug
 
-                unless [:read, :write_register].include?(operation)
+                unless [:read, :write].include?(operation)
                     raise "Invalid operation: #{operation}. Use :read or :write."
                 end
 
@@ -154,7 +154,7 @@ module Snes
                 sram_pos = position_in_contiguous_memory(bank, offset, first_bank, first_offset, page_size)
                 if operation == :read
                     @sram[sram_pos]
-                elsif operation == :write_register
+                elsif operation == :write
                     @sram[sram_pos] = value
                 end
             end
@@ -166,19 +166,19 @@ module Snes
 
                 if operation == :read
                     @ram[ram_pos]
-                elsif operation == :write_register
+                elsif operation == :write
                     @ram[ram_pos] = value
                 end
             end
 
             def access_low_ram(bank, offset, operation, value)
-                $cpu_logger.debug("#{__method__}\n") if @debug
-
                 if operation == :read
-                    @ram[offset]
-                elsif operation == :write_register
-                    @ram[offset] = value
+                    value = @ram[offset]
+                elsif operation == :write
+                    value = @ram[offset] = value
                 end
+                $cpu_logger.debug("#{__method__} - Value: 0x%04X" % value) if @debug
+                value
             end
 
             def access_controller(bank, offset, operation, value)
@@ -190,8 +190,8 @@ module Snes
                 @internal_cpu_registers.debug_print(operation, offset, value) if @debug
                 if operation == :read
                     @internal_cpu_registers.access(:read, offset)
-                elsif operation == :write_register
-                    @internal_cpu_registers.access(:write_register, offset, value)
+                elsif operation == :write
+                    @internal_cpu_registers.access(:write, offset, value)
                 end
             end
 
@@ -201,35 +201,36 @@ module Snes
             end
 
             def access_rom(bank, offset, operation, value)
-                $cpu_logger.debug("#{__method__}\n") if @debug
                 rom_addr = rom_address(bank, offset)
                 # $cpu_logger.debug("#{rom_addr.to_s(16)}") if @debug
 
-                @rom[rom_addr].ord if operation == :read
+                value = @rom[rom_addr].ord if operation == :read
+                $cpu_logger.debug("#{__method__} - Value: 0x%04X" % value) if @debug
+                value
             end
 
             def access_ppu(bank, offset, operation, value)
-                $cpu_logger.debug("#{__method__}\n") if @debug
-
                 if operation == :read
-                    @bus.read_ppu(offset)
-                elsif operation == :write_register
-                    @bus.write_ppu(offset, value)
+                    value = @bus.read_ppu(offset)
+                elsif operation == :write
+                    value = @bus.write_ppu(offset, value)
                 else
                     raise "Unknown operation: #{operation}"
                 end
+                $cpu_logger.debug("#{__method__} - Value: 0x%04X" % value) if @debug
+                value
             end
 
             def access_apu(bank, offset, operation, value)
-                $cpu_logger.debug("#{__method__}\n") if @debug
-
                 if operation == :read
-                    @bus.read_apu(offset)
-                elsif operation == :write_register
-                    @bus.write_apu(offset, value)
+                    value = @bus.read_apu(offset)
+                elsif operation == :write
+                    value = @bus.write_apu(offset, value)
                 else
                     raise "Unknown operation: #{operation}"
                 end
+                $cpu_logger.debug("#{__method__} - Value: 0x%04X" % value) if @debug
+                value
             end
 
             # Convert the Snes address to the ROM address

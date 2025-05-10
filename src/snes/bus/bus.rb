@@ -37,36 +37,36 @@ module Snes
             end
 
             def read_ppu(address)
-                raise "PPU not set on Bus" unless @ppu
-                Snes::PPU::Registers.debug_print(:read, address) if @debug
                 @ppu_mutex.synchronize do
+                    raise "PPU not set on Bus" unless @ppu
+                    Snes::PPU::Registers.debug_print(:read, address) if @debug
                     # puts "Reading from PPU register #{address.to_s(16)}"
                     @ppu.read_register(address)
                 end
             end
 
             def write_ppu(address, value)
-                raise "PPU not set on Bus" unless @ppu
-                Snes::PPU::Registers.debug_print(:write_register, address, value) if @debug
                 @ppu_mutex.synchronize do
+                    raise "PPU not set on Bus" unless @ppu
+                    Snes::PPU::Registers.debug_print(:write, address, value) if @debug
                     # puts "Writing to PPU register #{address.to_s(16)} with value #{value.to_s(16)}"
-                    @ppu.write_register(address, value)
+                    @ppu.write(address, value)
                 end
             end
 
             def read_apu(address)
-                raise "APU not set on Bus" unless @apu
                 # Snes::APU::Registers.debug_print(:read, address) if @debug
                 @apu_mutex.synchronize do
+                    raise "APU not set on Bus" unless @apu
                     # puts "Reading from APU register #{address.to_s(16)}"
                     @apu.read(address)
                 end
             end
 
             def write_apu(address, value)
-                raise "APU not set on Bus" unless @apu
                 # Snes::APU::Registers.debug_print(:write_register, address, value) if @debug
                 @apu_mutex.synchronize do
+                    raise "APU not set on Bus" unless @apu
                     # puts "Writing to APU register #{address.to_s(16)} with value #{value.to_s(16)}"
                     @apu.write(address, value)
                 end

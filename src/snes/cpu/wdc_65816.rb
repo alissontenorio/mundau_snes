@@ -1,32 +1,32 @@
-require_relative 'instructions/opcodes'
 require_relative 'internal_cpu_registers'
+require_relative 'instructions/fetch_data'
+require_relative 'instructions/opcodes'
 require_relative '../../exceptions/cpu_exceptions'
 
 module Snes
     module CPU
         class WDC65816
-            # include Singleton
+            include Instructions::Opcodes
+            include Instructions::FetchData
 
-            include Snes::CPU::Instructions::Opcodes
+            include Instructions::DataMovement
+            include Instructions::ControlFlow
+            include Instructions::Arithmetic
+            include Instructions::Logical
+            include Instructions::BitManipulation
+            include Instructions::SubroutineCalls
+            include Instructions::SystemControl
 
-            include Snes::CPU::Instructions::DataMovement
-            include Snes::CPU::Instructions::ControlFlow
-            include Snes::CPU::Instructions::Arithmetic
-            include Snes::CPU::Instructions::Logical
-            include Snes::CPU::Instructions::BitManipulation
-            include Snes::CPU::Instructions::SubroutineCalls
-            include Snes::CPU::Instructions::SystemControl
+            attr_accessor :a, :x, :y, :pc, :sp, :p, :dp, :dbr, :pbr,
+                          :cycles, :emulation_mode, :opcodes_table,
+                          :current_opcode_data, :emulation_vectors, :native_vectors
 
-            # # Singleton stuff
-            # @instance = new
-            # private_class_method :new
-            # def self.instance; @instance end
-
-            attr_accessor :a, :x, :y, :pc, :sp, :p, :dp, :dbr, :pbr, :cycles, :emulation_mode, :opcodes_table, :current_opcode_data
-
-            def setup(memory, reset_addr, debug=false)
+            def setup(memory, emulation_vectors, native_vectors, debug=false)
                 @debug = debug
                 @memory = memory
+                reset_addr = emulation_vectors[:reset]
+                @emulation_vectors = emulation_vectors
+                @native_vectors = native_vectors
                 @internal_cpu_registers = Snes::CPU::InternalCPURegisters
 
                 @opcodes_table = Snes::CPU::Instructions::Opcodes::TABLE
@@ -47,7 +47,7 @@ module Snes
                 # The register can be either 8 or 16 bits, depending on the CPU's mode.
                 #
                 # @return [Integer]
-                @x = 0
+                @x = 0x49
 
                 # Same above The register can be either 8 or 16 bits
                 @y = 0
@@ -134,7 +134,7 @@ module Snes
                 puts "\e[33m0x#{opcode.to_s(16).upcase}\e[0m - #{@current_opcode_data}" if @debug
                 # opcode_something = opcode_data.disassemble
                 handler = @current_opcode_data.handler
-                $cpu_logger.debug("0x#{opcode.to_s(16)} - Operation #{handler}") if @debug
+                $cpu_logger.debug("0x%02X - Operation #{handler}" % opcode) if @debug
                 # $cpu_logger.debug("Operation #{handler} : #{@pc.to_s(16)}") if @debug
             end
 
@@ -149,7 +149,7 @@ module Snes
                 @pc &= 0xFFFF   # If PC exceeeds FFFF
 
                 opcode_addr = full_pc(@pbr)
-                opcode = read_8(opcode_addr)
+                opcode = read_byte(opcode_addr)
 
                 get_opcode_data(opcode)
 
@@ -164,16 +164,16 @@ module Snes
                 @cycles += is_page_crossing?(old_pc) ? 1 : 0
             end
 
-            def read_8(address) # ToDo: Refactor to read_byte
+            def read_byte(address)
                 value = @memory.access(address & 0xFFFFFF, :read)
                 # puts "Reading value 0x%02X from address 0x%06X" % [value, address] if @debug
                 value
             end
 
-            def read_16(address) # ToDo: Refactor to read_word
-                lo = read_8(address)
+            def read_word(address)
+                lo = read_byte(address)
                 address = (address + 1) & 0xFFFF # Increment PC by 1
-                hi = read_8(address)
+                hi = read_byte(address)
                 (hi << 8) | lo # Little Endian Word Fetch from Instruction Stream
             end
 
@@ -181,92 +181,36 @@ module Snes
             #
             # end
 
-            def write_8(address, value)
+            def write_byte(address, value)
                 # puts "Writing value 0x%02X to address 0x%06X" % [value, address] if @debug
-                @memory.access(address & 0xFFFFFF, :write_register, value & 0xFF)
+                @memory.access(address & 0xFFFFFF, :write, value & 0xFF)
             end
 
-            # Given a value example 0x4231
-            # value & 0xFF -> 31
-            # (value >> 8) & 0xFF -> 42
-            def write_16(address, value) #Works in Low Endian
-                write_8(address, value & 0xFF) # Low Byte
-                write_8(address + 1, (value >> 8) & 0xFF) # High Byte
-            end
-
-            # | **Bank Source** | **Addressing Modes**                                          |
-            # | --------------- | ------------------------------------------------------------- |
-            # | **PBR**         | Instruction fetch, PC-relative control flow                   |
-            # | **Bank 0**      | Direct Page, Absolute, Stack-relative, Indirect JMP           |
-            # | **DBR**         | All (dp), (dp),Y, \[abs],Y, (S),Y — i.e., indirect data modes |
-            # | **Explicit**    | Long addressing, block moves, absolute long JMP/JSR           |
-            def fetch_data(p_flag: :m, force_8bit: false)
-                case @current_opcode_data.addressing_mode
-                when :immediate
-                    fetch_immediate(p_flag:, force_8bit:) # uses pbr
-                when :absolute
-                    fetch_absolute  # bank 0
-                when :direct_page
-                    fetch_direct_page # bank 0
-                when :stack_push
-                    nil
-                when :program_counter_relative
-                    fetch_pc_relative
-                else
-                    raise "No mode reach"
-                end
+            def write_word(address, value) #Works in Low Endian, Given a value example 0x4231
+                write_byte(address, value & 0xFF) # Low Byte, value & 0xFF -> 31
+                write_byte(address + 1, (value >> 8) & 0xFF) # High Byte, (value >> 8) & 0xFF -> 42
             end
 
             def converts_8bit_unsigned_to_signed(value)
-                value & 0x80 ? value - 0x100 : value
+                ((value & 0x80) != 0) ? (value - 0x100) : value
             end
 
-            def fetch_pc_relative
-                value = read_8(@pc)
-                offset = converts_8bit_unsigned_to_signed(value)
-                increment_pc!
-                (@pc + offset) & 0xFFFF # Ensure 16 bits
-            end
-
-            def fetch_immediate(p_flag: :m, force_8bit: false)
-                if force_8bit || status_p_flag?(p_flag) # 8-bit - emulation
-                    value = read_8(full_pc(@pbr))
-                    increment_pc!
-                else # 16-bit - native
-                    # bytes_used + 1
-                    value = read_16(full_pc(@pbr))
-                    increment_pc!(2)
-                end
-                value
-            end
-
-            def fetch_absolute
-                value = read_16(@pc)  # Fetch 16-bit absolute address
-                increment_pc!(2)    # Move PC forward by 2 bytes
-                value
-            end
-
-            def fetch_direct_page
-                offset = read_8(@pc)
-                increment_pc!
-                (@dp + offset) & 0xFFFF
-            end
 
             # Direct Page mode
-            def address_direct_page_x(offset)
-                # Use only 8 bits of X if the X flag is set (index registers are 8-bit)
-                x_value = status_p_flag?(:x) ? (@x & 0xFF) : @x
-
-                # Compute 16-bit direct page address
-                dp_address = (@dp + offset + x_value) & 0xFFFF
-
-                # Return full 24-bit effective address using the current Data Bank
-                (@dbr << 16) | dp_address
-            end
-
-            def address_from_absolute_x(offset)
-                (@dbr << 16) | ((offset + @x) & 0xFFFF)
-            end
+            # def address_direct_page_x(offset)
+            #     # Use only 8 bits of X if the X flag is set (index registers are 8-bit)
+            #     x_value = status_p_flag?(:x) ? (@x & 0xFF) : @x
+            #
+            #     # Compute 16-bit direct page address
+            #     dp_address = (@dp + offset + x_value) & 0xFFFF
+            #
+            #     # Return full 24-bit effective address using the current Data Bank
+            #     (@dbr << 16) | dp_address
+            # end
+            #
+            # def address_from_absolute_x(offset)
+            #     (@dbr << 16) | ((offset + @x) & 0xFFFF)
+            # end
 
             def emulation_mode?
                 @emulation_mode
@@ -291,7 +235,7 @@ module Snes
             end
 
             def inspect
-                "CPU PC=%02X%04X A=%02X X=%02X Y=%02X SP=%04X DP=%02X DBR=%02X Emulation=%s Cycles=%s P=%02X SBR=%02X - %s" %
+                "CPU PC=%02X%04X A=%04X X=%04X Y=%04X SP=%04X DP=%04X DBR=%02X Emulation=%s Cycles=%s P=%02X SBR=%02X - %s" %
                     # [@pbr, @pc, @a, @x, @y, @sp, @dp, @dbr, @emulation_mode, @cycles, @p, WDC65816.debug_format_flags(@p)]
                     [@pbr, @pc, @a, @x, @y, @sp, @dp, @dbr, @emulation_mode, @cycles, @p, @stack_bank, WDC65816.debug_format_flags(@p)]
             end
@@ -355,11 +299,11 @@ module Snes
             def push_8(value) # to stack
                 if @emulation_mode
                     address = 0x0100 | (@sp & 0xFF)
-                    @memory.access(address, :write_register, value & 0xFF)
+                    @memory.access(address, :write, value & 0xFF)
                     @sp = (@sp - 1) & 0xFF
                 else
                     address = (@stack_bank << 16) | @sp
-                    @memory.access(address, :write_register, value & 0xFF)
+                    @memory.access(address, :write, value & 0xFF)
                     @sp = (@sp - 1) & 0xFFFF
                 end
             end

@@ -18,7 +18,7 @@ module Snes::CPU::Instructions::Arithmetic
     # CMP
     def cmp_abs # 0xCD
         address = fetch_data
-        value = read_16(address)
+        value = read_word(address)
 
         if status_p_flag?(:m)
             acc = @a & 0x00FF

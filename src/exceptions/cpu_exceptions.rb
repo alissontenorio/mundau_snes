@@ -29,3 +29,9 @@ class CPUOpcodeNotImplementedError < NotImplementedError
         super("Opcode 0x%02X not implemented" % opcode)
     end
 end
+
+class CPUInvalidRegisterAddress < CPUOpcodeNotImplementedError
+    def initialize(address)
+        $cpu_logger.error("#{self.class.name}: Invalid CPU register address: 0x%04X" % address)
+    end
+end

@@ -1,7 +1,7 @@
 module Snes
     module APU
         module Instructions
-            # implement this, current to implement: 1d
+            # implement this, current to implement: 8f
             # cd, bd, e8, c6, 1d, d0, 8f, 78, 2f, eb, 7e, e4, cb, d7, fc, ab, 10, ba, da, c4, dd, 5d, 1f, c0
 
             # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |  Operation  | Addressing Mode
@@ -24,16 +24,61 @@ module Snes
                 set_nz_flags(value)
             end
 
-            # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |  Operation  | Addressing Mode
+            # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |   Operation   | Addressing Mode
             # MOV	SP, X	     0xBD	        TXS          1	       2	  --------      SP <- X     Implied type 1 (INDIRECT = (X)
             def mov_sp_x
                 @sp = @x
             end
 
-            # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |  Operation  | Addressing Mode
+            # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |   Operation   | Addressing Mode
             # MOV (X), A        0xC6                        1           4     ........      A -> (X)    Implied type 1 (INDIRECT = (X)
-            def mov_x_a
-                write(@x, @a)
+            def mov_ind_x_a
+                write_byte(@x, @a)
+            end
+
+            # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |   Operation   | Addressing Mode
+            # DEC X             0x1D           DEX            1         2      N.....Z.      -- X       Implied type 1 (Implied)
+            def dec_x
+                @x = (@x - 1) & 0xFF
+                set_nz_flags(@x)
+            end
+
+            # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |   Operation   | Addressing Mode
+            # BNE rel           0xD0        BNE rel          2        2/4     ........    Branch if Z=0   Relative (PC Relative)
+            def bne_rel
+                offset = converts_8bit_unsigned_to_signed(read_byte(@pc))
+                increment_pc!
+
+                unless status_p_flag?(:z)
+                    @pc = (@pc + offset) & 0xFFFF
+                    @cycles += 2
+                end
+            end
+
+            # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |   Operation   | Addressing Mode
+            # MOV dp, #imm      0x8F            ?            3         5      ........     (dp) <- imm    IMMEDIATE_DATA_TO_DP
+            def mov_ind_dp_imm
+                imm = read_byte(@pc)
+                increment_pc!
+                dp = read_byte(@pc) # address
+                increment_pc!
+
+                write_byte(dp, imm)
+            end
+
+            # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |   Operation   | Addressing Mode
+            # CMP dp, #imm      0x78             ?          3          5      N.....ZC     (dp) - imm     IMMEDIATE_DATA_TO_DP
+            def cmp_ind_dp_imm
+                imm = read_byte(@pc)
+                increment_pc!
+                dp = read_byte(@pc)
+                increment_pc!
+
+                value = read_byte(dp)
+
+                # result = (value - imm) & 0xFF
+                set_p_flag(:c, value >= imm)
+                set_nz_flags(value - imm)
             end
         end
     end

@@ -46,28 +46,45 @@ module Snes::APU
             0x00, 0x00, 0xC0, 0xFF
         ]
 
+        CPU_TO_APU_IO = {
+            0x2140 => 0xF4,
+            0x2141 => 0xF5,
+            0x2142 => 0xF6,
+            0x2143 => 0xF7
+        }
+
         attr_accessor :ram, :registers, :ipl_writable, :debug
 
         def setup(debug = false)
             @ram = Array.new(0x10000, 0)       # Full 64KB RAM
-            @registers = {}                    # For 0x00F0–0x00FF I/O
+            # Registers - For 0x00F0–0x00FF I/O
+            @registers = RegisterBank.new
             @debug = debug
         end
 
         def read(address)
-            value = access(address) { |mem, addr| mem[addr] }
-            puts "APU - Reading value #{value} from address 0x%06X" % address if @debug
-            value
+            access(address) { |mem, addr| mem[addr] }
         end
 
         def write(address, value)
             if address >= 0xFFC0 && address <= 0xFFFF # IPL rom
-                $logger.warn("Attempted write to restricted address range: #{address.to_s(16)}")
+                $apu_logger.warn("Attempted write to restricted address range: 0x%04X" % address)
                 return
             end
 
-            puts "APU - Writing value 0x%02X to address 0x%06X" % [value, address] if @debug
             access(address) { |mem, addr| mem[addr] = value }
+        end
+
+        def read_register_from_bus(address)
+            reg = CPU_TO_APU_IO[address]
+            raise "Invalid register address: 0x#{address.to_s(16)}" unless reg
+            read(reg)
+        end
+
+        def write_register_from_bus(address, value)
+            reg = CPU_TO_APU_IO[address]
+            raise "Invalid register address: 0x#{address.to_s(16)}" unless reg
+            write(reg, value)
         end
 
         private

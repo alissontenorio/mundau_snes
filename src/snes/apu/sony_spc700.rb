@@ -1,6 +1,7 @@
-require_relative 'registers'
+require_relative 'register'
 require_relative 'instructions/opcodes'
 require_relative 'memory'
+require_relative '../../exceptions/apu_exceptions'
 
 # Sony SPC700 CPU - it’s an independent 8-bit CPU that communicates with the DSP and receives commands from the main CPU
 #
@@ -58,42 +59,48 @@ module Snes::APU
             @current_opcode_data = nil
         end
 
-        def read(address)
-            @memory.read(address)
-            $apu_logger.debug("Reading value 0x%02X from address 0x%06X" % [@memory.read(address), address]) if @debug
+        def read(address) # For Bus use
+            value = @memory.read_register_from_bus(address & 0xFFFF)
+            puts "APU - Bus - Reading value 0x%02X from address 0x%04X" % [value, address] if @debug
+            $apu_logger.debug("Bus - Reading value 0x%02X from address 0x%04X" % [value, address]) if @debug
+            value
         end
 
-        def write(address, value)
-            $apu_logger.debug("Writing value 0x%02X to address 0x%06X" % [value, address]) if @debug
-            @memory.write(address, value)
+        def write(address, value) # For Bus use
+            puts "APU - Bus - Writing value 0x%02X to address 0x%04X" % [value, address] if @debug
+            $apu_logger.debug("Bus - Writing value 0x%02X to address 0x%04X" % [value, address]) if @debug
+            @memory.write_register_from_bus(address, value)
         end
 
-        def debug_opcode_data(opcode)
-            puts "\e[32mAPU\e[0m - \e[33m0x#{opcode.to_s(16).upcase}\e[0m - #{@current_opcode_data}" if @debug
+        def debug_opcode_data
+            puts "\e[32mAPU\e[0m - \e[33m0x#{@current_opcode_data[0].to_s(16).upcase}\e[0m - #{@current_opcode_data[1]}"
             # opcode_something = opcode_data.disassemble
-            handler = @current_opcode_data.handler
-            $apu_logger.debug("0x#{opcode.to_s(16)} - Operation #{handler}") if @debug
-            # $logger.debug("Operation #{handler} : #{@pc.to_s(16)}") if @debug
+            handler = @current_opcode_data[1].handler
+            $apu_logger.debug("0x#{@current_opcode_data[0].to_s(16)} - Operation #{handler}")
+            # $logger.debug("Operation #{handler} : #{@pc.to_s(16)}")
         end
 
         def boot
             $apu_logger.debug("[#{Thread.current.name}] Entering SPC700.boot") if @debug
 
             loop do
-                if @debug
-                    puts self.inspect
-                    $apu_logger.debug(self.inspect)
-                end
                 @cycles = 0
                 @pc &= 0xFFFF
                 opcode = Memory::IPL_ROM[@pc - 0xFFC0]
                 break if opcode == 0xFF # Break the loop in the last instruction of IPL ROM
-                @current_opcode_data = @opcodes_table[opcode]
-                raise NotImplementedError, "Opcode 0x%02X not implemented" % opcode unless @current_opcode_data
-                debug_opcode_data(opcode)
+                @current_opcode_data = opcode, @opcodes_table[opcode]
+                raise APUOpcodeNotImplementedError.new(opcode), "Opcode 0x%02X not implemented" % opcode unless @current_opcode_data[1]
+
+                if @debug
+                    # && opcode != 0x8F && opcode != 0xD0 && opcode != 0x1D
+                    $apu_logger.debug(self.inspect)
+                    puts
+                    puts self.inspect
+                    debug_opcode_data
+                end
                 increment_pc! # Always increment PC after fetching an instruction
-                send(@current_opcode_data.handler) # Call Instruction
-                @cycles += @current_opcode_data.base_cycles
+                send(@current_opcode_data[1].handler) # Call Instruction
+                @cycles += @current_opcode_data[1].base_cycles
                 yield if block_given? # Sleep to syncronize clock
             end
 
@@ -109,20 +116,29 @@ module Snes::APU
             @pc &= 0xFFFF
             # get opcode
             # break?
-            @current_opcode_data = @opcodes_table[opcode]
-            raise NotImplementedError, "Opcode 0x%02X not implemented" % opcode unless @current_opcode_data
-            debug_opcode_data(opcode)
+            @current_opcode_data = opcode, @opcodes_table[opcode]
+            raise APUOpcodeNotImplementedError, "Opcode 0x%02X not implemented" % opcode unless @current_opcode_data[1]
+            debug_opcode_data(@current_opcode_data[0])
             increment_pc!
-            send(@current_opcode_data.handler) # Call Instruction
-            @cycles += @current_opcode_data.base_cycles
+            send(@current_opcode_data[1].handler) # Call Instruction
+            @cycles += @current_opcode_data[1].base_cycles
             yield if block_given?
         end
 
         def read_byte(address)
             # @memory.read(address & 0xFFFF)  # 64KB memory wrapping
             value = @memory.read(address & 0xFFFF)  # 64KB memory wrapping
-            # puts "Reading value 0x%02X from address 0x%06X" % [value, address] if @debug
+            if @debug && !value.nil?
+                puts "APU - 0x#{@current_opcode_data[0].to_s(16)} - Operation #{@current_opcode_data[1].handler} - PC: #{(@pc- 0xFFC0).to_s(16)} - Reading value 0x%02X from address 0x%04X - SPC700" % [value, address]
+                $apu_logger.debug("0x#{@current_opcode_data[0].to_s(16)} - Operation #{@current_opcode_data[1].handler} - PC: #{(@pc- 0xFFC0).to_s(16)} - Reading value 0x%02X from address 0x%04X - SPC700" % [value, address])
+            end
             value
+        end
+
+        def write_byte(address, value)
+            puts "APU - 0x#{@current_opcode_data[0].to_s(16)} - Operation #{@current_opcode_data[1].handler} - PC: #{(@pc- 0xFFC0).to_s(16)} - Writing value 0x%02X to address 0x%04X - SPC700" % [value, address] if @debug
+            $apu_logger.debug("0x#{@current_opcode_data[0].to_s(16)} - Operation #{@current_opcode_data[1].handler} - PC: #{(@pc- 0xFFC0).to_s(16)} - Writing value 0x%02X to address 0x%04X - SPC700" % [value, address]) if @debug
+            @memory.write(address, value)
         end
 
         def inspect
@@ -170,6 +186,10 @@ module Snes::APU
             @psw ||= 0
             set_p_flag(:z, (value & 0xFF) == 0)
             set_p_flag(:n, (value & 0x80) != 0)
+        end
+
+        def converts_8bit_unsigned_to_signed(value)
+            value & 0x80 ? value - 0x100 : value
         end
     end
 end

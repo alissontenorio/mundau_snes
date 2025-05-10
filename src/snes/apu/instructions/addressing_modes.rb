@@ -77,7 +77,7 @@ module Snes
                 # b9 - sbc - Indirect Page To Indirect Page - (x), (y) - Implied Indirect (type 1)
                 INDIRECT_PAGE_TO_DP = :indirect_page_to_dp
 
-                # Symbol: dp, #imm, Bytes: 3 / Direct Page Immediate
+                # Symbol: dp, #imm, Bytes: 3 / Direct Page Immediate / Immediate Data to Direct Page = d, #i
                 IMMEDIATE_DATA_TO_DP = :immediate_data_to_dp
 
                 # Symbol: dp.bit, Bytes: 2

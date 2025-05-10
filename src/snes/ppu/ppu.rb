@@ -199,7 +199,7 @@ module Snes::PPU
         def trigger_vblank_interrupt
             # Simulate a V-blank interrupt
             # In a real system, we would notify the CPU to handle the interrupt
-            puts "V-blank interrupt triggered"
+            puts "V-blank interrupt triggered" if @debug
         end
     end
 end

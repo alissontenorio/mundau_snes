@@ -46,6 +46,16 @@ def set_logger
         "#{severity} -- : #{msg}\n"
     end
     $apu_logger.instance_variable_get(:@logdev).dev.sync = true
+
+    # APU-specific logger
+    ppu_log_file = "#{log_directory}/ppu.log"
+    File.delete(ppu_log_file) if File.exist?(ppu_log_file)
+    $ppu_logger = Logger.new(ppu_log_file)
+    $ppu_logger.level = Logger::DEBUG
+    $ppu_logger.formatter = proc do |severity, datetime, progname, msg|
+        "#{severity} -- : #{msg}\n"
+    end
+    $ppu_logger.instance_variable_get(:@logdev).dev.sync = true
 end
 
 set_logger

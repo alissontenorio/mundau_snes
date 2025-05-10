@@ -21,3 +21,11 @@ class LowRamOffsetError < StandardError
         super("Offset 0x#{offset.to_s(16).rjust(4, '0').upcase} is out of range for Low RAM (expected 0x0000..0x1FFF)")
     end
 end
+
+class CPUOpcodeNotImplementedError < NotImplementedError
+    def initialize(opcode)
+        $cpu_logger.error("#{self.class.name}: Opcode 0x%02X not implemented" % opcode)
+        # $cpu_logger.flush if $apu_logger.respond_to?(:flush)
+        super("Opcode 0x%02X not implemented" % opcode)
+    end
+end

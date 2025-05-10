@@ -1,5 +1,6 @@
 require_relative 'instructions/opcodes'
 require_relative 'internal_cpu_registers'
+require_relative '../../exceptions/cpu_exceptions'
 
 module Snes
     module CPU
@@ -139,7 +140,7 @@ module Snes
 
             def get_opcode_data(opcode)
                 @current_opcode_data = @opcodes_table[opcode] # 1 cycle for fetching the opcode
-                raise NotImplementedError, "Opcode 0x%02X not implemented" % opcode unless @current_opcode_data
+                raise CPUOpcodeNotImplementedError.new(opcode), "Opcode 0x%02X not implemented" % opcode unless @current_opcode_data
                 debug_opcode_data(opcode) if @debug
             end
 

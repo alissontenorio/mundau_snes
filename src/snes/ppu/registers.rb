@@ -108,7 +108,7 @@ module Snes
                 def debug_print(operation, address, value = nil)
                     info = info(address)
                     write = value ? (" value " + value.to_s(16)) : ''
-                    $logger.debug("PPU Register - #{operation.to_s.capitalize} in address #{address.to_s(16)}#{write} - #{info[:name]} - #{info[:description]}\n")
+                    $ppu_logger.debug("PPU Register - #{operation.to_s.capitalize} in address #{address.to_s(16)}#{write} - #{info[:name]} - #{info[:description]}\n")
                     puts "\e[31mPPU\e[0m register - #{operation.to_s.capitalize}#{write} in address #{address.to_s(16)} - \e[31m#{info[:name]}\e[0m - #{info[:description]}"
                 end
 

@@ -36,11 +36,18 @@ module Snes
         def setup(debug = false)
             @cartridge = nil
             @m_map = nil
-            @debug = debug
+            @debug_cpu = debug
+            @debug_apu = debug
+            @debug_ppu = debug
+            @debug_bus = debug
+            # @debug_cpu = false
+            # # @debug_apu = false
+            # @debug_ppu = false
+            # @debug_bus = false
 
             @running = true
             @bus = Snes::Bus::Bus.instance
-            @bus.setup(@debug)
+            @bus.setup(@debug_bus)
 
             @shutdown_mutex = Mutex.new
             @shutdown = false
@@ -49,7 +56,7 @@ module Snes
         def insert_cartridge(rom_raw)
             cartridge = Rom::CartridgeBuilder.new(rom_raw).get_cartridge
             @cartridge = cartridge
-            @m_map = Snes::Memory::Mapper.new(@cartridge, RAM, SRAM, @bus, @debug)
+            @m_map = Snes::Memory::Mapper.new(@cartridge, RAM, SRAM, @bus, @debug_cpu)
         end
 
         def print_cartridge_header
@@ -88,7 +95,7 @@ module Snes
             core = Snes::CPU::WDC65816.new
             # internal_cpu_registers = Snes::CPU::InternalCPURegisters.new
             # @m_map.set_internal_cpu_registers(internal_cpu_registers)
-            core.setup(@m_map, @cartridge.emulation_vectors[:reset], @debug)
+            core.setup(@m_map, @cartridge.emulation_vectors[:reset], @debug_cpu)
             # core.setup(@m_map, @cartridge.emulation_vectors[:reset], false)
             sleep_time = (1.0 / FPS)
             # sleep_time = (1.0 / 5)
@@ -111,10 +118,9 @@ module Snes
         end
 
         def run_ppu
-            puts "Run ppu" if @debug
+            puts "Run ppu" if @debug_ppu
             ppu = Snes::PPU::PPU.new
-            # ppu.setup(@debug)
-            ppu.setup(false)
+            ppu.setup(@debug_ppu)
             sleep_time = (1.0 / FPS)
             @bus.ppu = ppu
 
@@ -127,16 +133,16 @@ module Snes
         end
 
         def run_apu
-            puts "Run apu" if @debug
+            puts "Run apu" if @debug_apu
             apu = Snes::APU::SPC700.new
-            apu.setup(@debug)
+            apu.setup(@debug_apu)
             sleep_time = (1.0 / FPS)
             # sleep_callback = -> { sleep(1/2) }
             @bus.apu = apu
 
             apu.boot do
                 sleep(sleep_time)
-                $stdout.flush if @debug
+                $stdout.flush if @debug_apu
             end
 
             # while @running
@@ -152,16 +158,20 @@ module Snes
         end
 
         def execute_cpu_instruction(core)
-            # print "\e[2J\e[f" if @debug # clear screen
-            puts core.inspect if @debug
-            $cpu_logger.debug("--------------------------") if @debug
-            $cpu_logger.debug("Fetch decode execute start") if @debug
-            $cpu_logger.debug("#{core.inspect}") if @debug
+            # print "\e[2J\e[f" if @debug_cpu # clear screen
+            if @debug_cpu
+                puts core.inspect
+                $cpu_logger.debug("--------------------------")
+                $cpu_logger.debug("Fetch decode execute start")
+                $cpu_logger.debug("#{core.inspect}")
+            end
             core.fetch_decode_execute
-            $cpu_logger.debug("Cycles: #{core.cycles} ") if @debug
-            puts if @debug
-            $cpu_logger.debug(" ") if @debug
-            $stdout.flush if @debug
+            if @debug_cpu
+                $cpu_logger.debug("Cycles: #{core.cycles} ")
+                puts
+                $cpu_logger.debug(" ")
+                $stdout.flush
+            end
         end
 
         def with_thread_cleanup

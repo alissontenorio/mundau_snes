@@ -26,10 +26,14 @@ module Snes::APU::Instructions::Opcodes
         # 0x18 => Opcode.new(:clc, 'Clear Carry Flag', AddressingMode::IMPLIED, 0b0000_0001, 1, 2),
         0xCD => Opcode.new(:mov_x_imm, 'MOV X, #imm', AddressingMode::IMMEDIATE, 0b1000_0010, 2, 2),
         0xE8 => Opcode.new(:mov_a_imm, 'MOV A, #imm', AddressingMode::IMMEDIATE, 0b1000_0010, 2, 2),
-        0xC6 => Opcode.new(:mov_x_a, 'MOV (X), A', AddressingMode::IMPLIED, 0b0000_000, 1, 2),
+        0xC6 => Opcode.new(:mov_ind_x_a, 'MOV (X), A', AddressingMode::IMPLIED, 0b0000_000, 1, 2),
 
 
-        0xBD => Opcode.new(:mov_sp_x, 'MOV Y, #imm', AddressingMode::IMPLIED, 0b0000_000, 1, 2), # Implied (type 1) -
+        0xBD => Opcode.new(:mov_sp_x, 'MOV Y, #imm', AddressingMode::IMPLIED, 0b0000_000, 1, 2), # Implied (type 1)
+        0x1D => Opcode.new(:dec_x, 'DEC X', AddressingMode::IMPLIED, 0b1000_0010, 1, 2), # Implied (type 1)
+        0xD0 => Opcode.new(:bne_rel, 'BNE rel', AddressingMode::RELATIVE, 0b0000_0000, 2, 2),
+        0x8F => Opcode.new(:mov_ind_dp_imm, 'MOV (dp), #imm', AddressingMode::IMMEDIATE_DATA_TO_DP, 0b0000_0000, 3, 5),
+        0x78 => Opcode.new(:cmp_ind_dp_imm, 'CMP dp, #imm', AddressingMode::IMMEDIATE_DATA_TO_DP, 0b1000_0011, 3, 5),
     }
 end
 

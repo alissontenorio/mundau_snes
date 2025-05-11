@@ -72,13 +72,23 @@ module Snes::CPU::Instructions::Arithmetic
     #     - X = 1 → X/Y registers are 8 bits
     #
     # @return [void]
-    def inx
+    def inx # 0xE8
         if status_p_flag?(:x)
             @x = (@x + 1) & 0x00FF
             set_nz_flags(@x, true)
         else
             @x = (@x + 1) & 0xFFFF
             set_nz_flags(@x, false)
+        end
+    end
+
+    def iny # 0xC8
+        if status_p_flag?(:x)
+            @y = (@y + 1) & 0xFF
+            set_nz_flags(@y, true)
+        else
+            @y = (@y + 1) & 0xFFFF
+            set_nz_flags(@y, false)
         end
     end
 end

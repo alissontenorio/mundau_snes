@@ -1,8 +1,8 @@
 module Snes
     module APU
         module Instructions
-            # implement this, current to implement: 8f
-            # cd, bd, e8, c6, 1d, d0, 8f, 78, 2f, eb, 7e, e4, cb, d7, fc, ab, 10, ba, da, c4, dd, 5d, 1f, c0
+            # implement this, current to implement: 2f
+            # cd, bd, e8, c6, 1d, d0, 8f, 78, 2f - BRA rel, eb, 7e, e4, cb, d7, fc, ab, 10, ba, da, c4, dd, 5d, 1f, c0
 
             # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |  Operation  | Addressing Mode
             # MOV X, #imm	     0xCD	   LDX #imm          2	      2	      N-----Z-      X <- imm          Immediate

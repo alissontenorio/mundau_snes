@@ -183,7 +183,8 @@ module Snes
             end
             core.fetch_decode_execute
             if @debug_cpu
-                $cpu_logger.debug("Cycles: #{core.cycles}\n")
+                # $cpu_logger.debug("Cycles: #{core.cycles}\n")
+                $cpu_logger.debug("\n")
                 puts
                 $stdout.flush
             end

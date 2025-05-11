@@ -4,7 +4,7 @@ module Snes::CPU::Instructions::DataMovement
     # LDX
     # LDY
 
-    def ldy_immediate
+    def ldy_imm
         value = fetch_data(p_flag: :x)
 
         if status_p_flag?(:x) # 8-bit index register (X/Y)
@@ -22,17 +22,27 @@ module Snes::CPU::Instructions::DataMovement
     # STY
 
     # LDA
-    def lda_immediate # 0xA9
+    def lda
         value = fetch_data
 
         if status_p_flag?(:m) # 8-bit - emulation
             @a = (@a & 0xFF00) | value # Store value into the low byte of A, keeping high byte intact
-            set_nz_flags(@a, true)
+            set_nz_flags(@a & 0xFF, true)
         else # 16-bit - native
             @a = value & 0xFFFF
             set_nz_flags(@a, false)
             @cycles += 1
         end
+    end
+
+    def lda_imm # 0xA9
+        lda
+    end
+
+    def lda_dp_indirect_long_y # 0xB7
+        lda
+
+        @cycles += 1 if (@dp & 0xFF) != 0 # Add 1 cycle if Direct Page is unaligned
     end
 
     # STA
@@ -48,6 +58,10 @@ module Snes::CPU::Instructions::DataMovement
 
             @cycles += 1
         end
+    end
+
+    def sta_imm # 0x8D
+        sta
     end
 
     def sta_dp
@@ -87,9 +101,17 @@ module Snes::CPU::Instructions::DataMovement
 
     # Push Instructions
     # PHA
+    def pha # 0x48
+        if status_p_flag?(:m)
+            push_byte(@a & 0xFF)
+        else
+            push_byte(@a & 0xFFFF)
+        end
+    end
+
     # PHP
     def php
-        push_8(@p)
+        push_byte(@p)
     end
 
     # PHX
@@ -112,7 +134,18 @@ module Snes::CPU::Instructions::DataMovement
     # PLD
 
     # Transfer Instructions
+    #
     # TAX
+    def tax # 0xAA
+        if status_p_flag?(:x)
+            @x = @a & 0xFF
+            set_nz_flags(@x, true)
+        else
+            @x = @a & 0xFFFF
+            set_nz_flags(@x, false)
+        end
+    end
+
     # TAY
     # TSX
     # TXS

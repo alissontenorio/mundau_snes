@@ -86,7 +86,7 @@ module Snes
                 @pbr = 0
 
                 # Stack Bank
-                @stack_bank = 0
+                # @stack_bank = 0
 
                 # === Emulation Mode vs Native Mode ===
                 #
@@ -171,15 +171,17 @@ module Snes
             end
 
             def read_word(address)
-                lo = read_byte(address)
-                address = (address + 1) & 0xFFFF # Increment PC by 1
-                hi = read_byte(address)
-                (hi << 8) | lo # Little Endian Word Fetch from Instruction Stream
+                low = read_byte(address)
+                high = read_byte((address + 1) & 0xFFFFFF) # Increment PC by 1
+                (high << 8) | low
             end
 
-            # def read_24(address) # ToDo: Refactor to read_long_address
-            #
-            # end
+            def read_long(address)
+                low  = read_byte(address)
+                mid  = read_byte((address + 1) & 0xFFFFFF) # Increment PC by 1
+                high = read_byte((address + 2) & 0xFFFFFF) # Increment PC by 1
+                (high << 16) | (mid << 8) | low
+            end
 
             def write_byte(address, value)
                 # puts "Writing value 0x%02X to address 0x%06X" % [value, address] if @debug
@@ -188,8 +190,14 @@ module Snes
 
             def write_word(address, value) #Works in Low Endian, Given a value example 0x4231
                 write_byte(address, value & 0xFF) # Low Byte, value & 0xFF -> 31
-                write_byte(address + 1, (value >> 8) & 0xFF) # High Byte, (value >> 8) & 0xFF -> 42
+                write_byte((address + 1) & 0xFFFFFF, (value >> 8) & 0xFF) # High Byte, (value >> 8) & 0xFF -> 42
             end
+
+            # def write_long(address, value)
+            #     write_byte(address, value & 0xFF) # low
+            #     write_byte((address + 1) & 0xFFFFFF, (value >> 8) & 0xFF) # Increment PC by 1, mid
+            #     write_byte((address + 2) & 0xFFFFFF, (value >> 16) & 0xFF) # Increment PC by 1, high
+            # end
 
             def converts_8bit_unsigned_to_signed(value)
                 ((value & 0x80) != 0) ? (value - 0x100) : value
@@ -235,9 +243,8 @@ module Snes
             end
 
             def inspect
-                "CPU PC=%02X%04X A=%04X X=%04X Y=%04X SP=%04X DP=%04X DBR=%02X Emulation=%s Cycles=%s P=%02X SBR=%02X - %s" %
-                    # [@pbr, @pc, @a, @x, @y, @sp, @dp, @dbr, @emulation_mode, @cycles, @p, WDC65816.debug_format_flags(@p)]
-                    [@pbr, @pc, @a, @x, @y, @sp, @dp, @dbr, @emulation_mode, @cycles, @p, @stack_bank, WDC65816.debug_format_flags(@p)]
+                "CPU PC=%02X%04X A=%04X X=%04X Y=%04X SP=%04X DP=%04X DBR=%02X P=%02X Emulation=%s PreviouslyCycles=%s - %s" %
+                    [@pbr, @pc, @a, @x, @y, @sp, @dp, @dbr, @p, @emulation_mode, @cycles, WDC65816.debug_format_flags(@p)]
             end
 
             def status_p_flag?(symbol)
@@ -296,16 +303,21 @@ module Snes
                 emulation_mode? && ((old_pc & 0xFF00) != (@pc & 0xFF00))
             end
 
-            def push_8(value) # to stack
+            def push_byte(value) # to stack
                 if @emulation_mode
                     address = 0x0100 | (@sp & 0xFF)
                     @memory.access(address, :write, value & 0xFF)
                     @sp = (@sp - 1) & 0xFF
                 else
-                    address = (@stack_bank << 16) | @sp
+                    address = @sp
                     @memory.access(address, :write, value & 0xFF)
                     @sp = (@sp - 1) & 0xFFFF
                 end
+            end
+
+            def push_word(value)
+                push_byte(value & 0xFF)        # low byte
+                push_byte((value >> 8) & 0xFF) # high byte
             end
 
             def set_nz_flags(value, is_8_bit)

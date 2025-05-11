@@ -20,6 +20,8 @@ module Snes
                         nil
                     when :program_counter_relative
                         fetch_pc_relative
+                    when :direct_page_indirect_long_indexed_y
+                        fetch_dp_indirect_long_index_y(p_flag:, force_8bit:)
                     else
                         raise "No mode reach"
                     end
@@ -27,9 +29,9 @@ module Snes
 
                 def fetch_pc_relative
                     value = read_byte(@pc)
-                    offset = converts_8bit_unsigned_to_signed(value)
                     increment_pc!
-                    (@pc + offset) & 0xFFFF # Ensure 16 bits
+                    converts_8bit_unsigned_to_signed(value)
+                    # (@pc + offset) & 0xFFFF # Ensure 16 bits
                 end
 
                 def fetch_immediate(p_flag: :m, force_8bit: false)
@@ -54,6 +56,23 @@ module Snes
                     offset = read_byte(@pc)
                     increment_pc!
                     (@dp + offset) & 0xFFFF
+                end
+
+                def fetch_dp_indirect_long_index_y(p_flag: :m, force_8bit: false)
+                    dp_offset = read_byte(@pc)  # Fetch the direct page offset (1 byte)
+                    increment_pc!
+
+                    # Read the long (24-bit) address from the direct page offset
+                    base_addr = read_long(@dp + dp_offset)
+
+                    # Calculate the effective address by adding the Y register (index)
+                    effective_addr = (base_addr + @y) & 0xFFFFFF
+
+                    if force_8bit || status_p_flag?(p_flag)
+                        read_byte(effective_addr)
+                    else
+                        read_word(effective_addr)
+                    end
                 end
             end
         end

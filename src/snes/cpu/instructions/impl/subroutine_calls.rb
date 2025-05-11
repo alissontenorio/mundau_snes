@@ -4,8 +4,7 @@ module Snes::CPU::Instructions::SubroutineCalls
         target = fetch_data
 
         return_address = (@pc - 1) & 0xFFFF
-        push_8((return_address >> 8) & 0xFF) # high byte
-        push_8(return_address & 0xFF)        # low byte
+        push_word(return_address)
 
         @pc = target
     end
@@ -26,18 +25,16 @@ module Snes::CPU::Instructions::SubroutineCalls
 
         if @emulation_mode
             # Emulation mode: 8-bit stack and no PBR push
-            push_8((return_address >> 8) & 0xFF)
-            push_8(return_address & 0xFF)
-            push_8(@p | 0x10)  # Push status with B (break) flag set
+            push_word(return_address)
+            push_byte(@p | 0x10)  # Push status with B (break) flag set
 
             set_p_flag(:i, true) # Set interrupt disable
             @pc = read_word(@emulation_vectors[:irq_brk])
         else
             # Native mode: 16-bit stack, push PBR, full return address
-            push_8(@pbr)                           # Push Program Bank
-            push_8((return_address >> 8) & 0xFF)   # Push PC high byte
-            push_8(return_address & 0xFF)          # Push PC low byte
-            push_8(@p)                             # Status register (B not set in native)
+            push_byte(@pbr)                           # Push Program Bank
+            push_word(return_address)
+            push_byte(@p)                             # Status register (B not set in native)
 
             set_p_flag(:i, true)     # Set interrupt disable
             set_p_flag(:d, false)    # Clear decimal flag per 65C816 behavior

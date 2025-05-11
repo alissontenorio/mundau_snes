@@ -5,10 +5,9 @@ module Snes::CPU::Instructions::ControlFlow
 
     # BRA
     def bra # 0x80
-        offset = converts_8bit_unsigned_to_signed(read_byte(@pc))
-        increment_pc!
+        offset = fetch_data
 
-        @pc = @pc + offset
+        @pc = (@pc + offset) & 0xFFFF # Ensure 16 bits
     end
 
     # BRL
@@ -21,12 +20,11 @@ module Snes::CPU::Instructions::ControlFlow
 
 
     # BNE
-    def bne
-        offset = converts_8bit_unsigned_to_signed(read_byte(@pc))
-        increment_pc!
+    def bne # 0xD0
+        offset = fetch_data
 
         unless status_p_flag?(:z) # if flag is 0 jump occurs
-            @pc = @pc + offset
+            @pc = (@pc + offset) & 0xFFFF # Ensure 16 bits
             @cycles += 1
         end
     end

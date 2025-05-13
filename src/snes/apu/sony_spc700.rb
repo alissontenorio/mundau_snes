@@ -36,7 +36,7 @@ module Snes::APU
             @y = 0
 
             # 16-bit pair of A (lsb) and Y (msb).
-            @ya = 0
+            # @ya = 0 # YA is a virtual 16-bit SPC700 register who's high byte is the Y index register and who's low byte is accumulator
 
             # program status word: NVPBHIZC
             # N - negative flag (high bit of result was set)
@@ -118,7 +118,7 @@ module Snes::APU
             # break?
             @current_opcode_data = opcode, @opcodes_table[opcode]
             raise APUOpcodeNotImplementedError, "Opcode 0x%02X not implemented" % opcode unless @current_opcode_data[1]
-            debug_opcode_data(@current_opcode_data[0])
+            debug_opcode_data
             increment_pc!
             send(@current_opcode_data[1].handler) # Call Instruction
             @cycles += @current_opcode_data[1].base_cycles
@@ -142,12 +142,8 @@ module Snes::APU
         end
 
         def inspect
-            "APU PC=%04X A=%02X X=%02X Y=%02X SP=%02X YA=%04X PSW=%02X" %
-                [@pc, @a, @x, @y, @sp, @ya, @psw]
-            # reg = @registers.all
-            # "APU PC=%04X A=%02X X=%02X Y=%02X SP=%04X YA=%04X Psw=%02X - Registers: F4=%02X F5=%02X F6=%02X F7=%02X" %
-                # [@pc, @a, @x, @y, @sp, @ya, @psw, reg[0xF4]&.value, reg[0xF5]&.value, reg[0xF6]&.value, reg[0xF7]&.value]
-            # [@pc, @a, @x, @y, @sp, @ya , @psw, debug_format_flags(@psw)]
+            "APU PC=%04X A=%02X X=%02X Y=%02X SP=%02X PSW=%02X" %
+                [@pc, @a, @x, @y, @sp, @psw]
         end
 
         def increment_pc!(bytes = 1)
@@ -182,14 +178,19 @@ module Snes::APU
             end
         end
 
-        def set_nz_flags(value)
+        def set_nz_flags(value, is_8_bit = true)
             @psw ||= 0
-            set_p_flag(:z, (value & 0xFF) == 0)
-            set_p_flag(:n, (value & 0x80) != 0)
+            if is_8_bit
+                set_p_flag(:z, (value & 0xFF) == 0)
+                set_p_flag(:n, (value & 0x80) != 0)
+            else
+                set_p_flag(:z, (value & 0xFFFF) == 0)
+                set_p_flag(:n, (value & 0x8000) != 0)
+            end
         end
 
         def converts_8bit_unsigned_to_signed(value)
-            value & 0x80 ? value - 0x100 : value
+            ((value & 0x80) != 0) ? (value - 0x100) : value
         end
     end
 end

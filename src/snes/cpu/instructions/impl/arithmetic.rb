@@ -14,7 +14,51 @@ module Snes::CPU::Instructions::Arithmetic
     # INY
 
     # ADC
+    def adc_imm # 0x69
+        operand = fetch_data
+        carry_in = status_p_flag?(:c) ? 1 : 0
+
+        if status_p_flag?(:m)
+            acc = @a & 0xFF
+
+            if status_p_flag?(:d) # Decimal
+                result, carry_out = bcd_add_8bit(acc, operand, carry_in)
+                set_p_flag(:v, false)
+                @cycles += 1
+            else
+                result = acc + operand + carry_in
+                carry_out = result > 0xFF
+                set_p_flag(:v, (~(acc ^ operand) & (acc ^ result) & 0x80) != 0)
+                result &= 0xFF
+            end
+
+            @a = (@a & 0xFF00) | result
+            set_p_flag(:c, carry_out)
+            set_nz_flags(result, true)
+        else
+            acc = @a & 0xFFFF
+
+            if status_p_flag?(:d) # Decimal
+                result, carry_out = bcd_add_16bit(acc, operand, carry_in)
+                set_p_flag(:v, false)
+                @cycles += 1
+            else
+                result = acc + operand + carry_in
+                carry_out = result > 0xFFFF
+                set_p_flag(:v, (~(acc ^ operand) & (acc ^ result) & 0x8000) != 0)
+                result &= 0xFFFF
+            end
+
+            @a = result
+            set_p_flag(:c, carry_out)
+            set_nz_flags(result, false)
+
+            @cycles += 1
+        end
+    end
+
     # SBC
+
     # CMP
     def cmp_abs # 0xCD
         address = fetch_data
@@ -39,19 +83,24 @@ module Snes::CPU::Instructions::Arithmetic
     end
 
     # CPX
-    # CPY
+    def cpx_imm # 0xE0
+        operand = fetch_data(p_flag: :x)
 
-    # def adc_dp_x(dp, x)
-    #     dp = dp + x
-    # end
-    #
-    # def adc_sr_s(sr, s)
-    #
-    # end
-    #
-    # def adc_dp(dp)
-    #
-    # end
+        if status_p_flag?(:x)
+            result = (@x & 0xFF) - operand
+
+            set_nz_flags(result, true)
+            set_p_flag(:c, (@x & 0xFF) >= operand)
+        else
+            result = (@x & 0xFFFF) - operand
+
+            set_nz_flags(result, false)
+            set_p_flag(:c, (@x & 0xFFFF) >= operand)
+            @cycles += 1
+        end
+    end
+
+    # CPY
 
     # === Opcode 0xE8 ─ INX (Increment X) =========================================
     #

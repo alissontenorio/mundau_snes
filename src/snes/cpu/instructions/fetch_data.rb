@@ -22,6 +22,10 @@ module Snes
                         fetch_pc_relative
                     when :direct_page_indirect_long_indexed_y
                         fetch_dp_indirect_long_index_y(p_flag:, force_8bit:)
+                    when :direct_indexed_x
+                        fetch_dp_index_x
+                    when :accumulator
+                        fetch_accumulator
                     else
                         raise "No mode reach"
                     end
@@ -55,6 +59,7 @@ module Snes
                 def fetch_direct_page
                     offset = read_byte(@pc)
                     increment_pc!
+                    @cycles += 1 if (@dp & 0xFF) != 0 # Add 1 cycle if Direct Page is unaligned
                     (@dp + offset) & 0xFFFF
                 end
 
@@ -68,10 +73,42 @@ module Snes
                     # Calculate the effective address by adding the Y register (index)
                     effective_addr = (base_addr + @y) & 0xFFFFFF
 
+                    @cycles += 1 if (@dp & 0xFF) != 0 # Add 1 cycle if Direct Page is unaligned
+
                     if force_8bit || status_p_flag?(p_flag)
                         read_byte(effective_addr)
                     else
                         read_word(effective_addr)
+                    end
+                end
+
+                def fetch_dp_index_x
+                    # Bank will always be 0 - Page 101 - Assembly programming w65c816
+                    dp_offset = read_byte(@pc)
+                    increment_pc!
+
+                    if status_p_flag?(:x) # 8-bit index
+                        offset = (dp_offset + @x) & 0xFF
+                    else # 16-bit index
+                        offset = (dp_offset + @x) & 0xFFFF
+                    end
+
+                    address = (@dp + offset) & 0xFFFF
+
+                    @cycles += 1 if (@dp & 0xFF) != 0 # Add 1 cycle if Direct Page is unaligned
+
+                    if status_p_flag?(:m)
+                        read_byte(address)
+                    else
+                        read_word(address)
+                    end
+                end
+
+                def fetch_accumulator
+                    if status_p_flag?(:m)
+                        @a & 0xFF
+                    else
+                        @a & 0xFFFF
                     end
                 end
             end

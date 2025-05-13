@@ -150,7 +150,7 @@ module Snes
             puts "Run apu" if @debug_apu
             apu = Snes::APU::SPC700.new
             apu.setup(@debug_apu)
-            sleep_time = (1.0 / FPS)
+            sleep_time = (3 / FPS)
             # sleep_callback = -> { sleep(1/2) }
             @bus.apu = apu
 

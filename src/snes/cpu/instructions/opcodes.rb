@@ -60,14 +60,16 @@ module Snes::CPU::Instructions
 
             0x08 => Opcode.new(:php, 'Push Processor Status on Stack', AddressingMode::IMPLIED, 0b0000_0000, 1, 3),
 
+
             # Data Movement
             0x48 => Opcode.new(:pha, 'Push Accumulator', AddressingMode::STACK_PUSH, 0b0000_0000, 1, 3),
+            0x68 => Opcode.new(:pla, 'Pull Accumulator', AddressingMode::STACK_PULL, 0b1000_0010, 1, 4),
 
             0xCD => Opcode.new(:cmp_abs, 'Compare Accumulator with Memory', AddressingMode::ABSOLUTE, 0b1000_0011, 3, 4),
             # 0x64 => Opcode.new(:stz_dp, 'Store Zero to Memory', AddressingMode::DIRECT_PAGE, 0b0000_0000, 2, 3),
             0x9C => Opcode.new(:stz_abs, 'Store Zero to Memory', AddressingMode::ABSOLUTE, 0b0000_0000, 3, 4),
 
-            0x8D => Opcode.new(:sta_imm, 'Store Accumulator To Memory', AddressingMode::ABSOLUTE, 0b0000_0000, 3, 4),
+            0x8D => Opcode.new(:sta_abs, 'Store Accumulator To Memory', AddressingMode::ABSOLUTE, 0b0000_0000, 3, 4),
             # 0x8F => Opcode.new(:sta_abs_long, 'Store Accumulator To Memory', AddressingMode::ABSOLUTE_LONG, 0b0000_0000, 4, 5),
             0x85 => Opcode.new(:sta_dp, 'Store Accumulator To Memory', AddressingMode::DIRECT_PAGE, 0b0000_0000, 2, 3),
             # 0x92 => Opcode.new(:sta_dp_indirect, 'Store Accumulator To Memory', AddressingMode::DIRECT_PAGE_INDIRECT, 0b0000_0000, 2, 5),
@@ -105,13 +107,20 @@ module Snes::CPU::Instructions
             0x5B => Opcode.new(:tcd, 'Transfer 16-Bit Accumulator to Direct Page Register', AddressingMode::IMPLIED, 0b1000_0010, 1, 2),
             0x1B => Opcode.new(:tcs, 'Transfer Accumulator to Stack Pointer', AddressingMode::IMPLIED, 0b1000_0010, 1, 2),
             0xAA => Opcode.new(:tax, 'Transfer Accumulator to Index Register X', AddressingMode::IMPLIED, 0b1000_0010, 1, 2),
+            0xEB => Opcode.new(:xba, 'Exchange B and A 8-bit Accumulators', AddressingMode::IMPLIED, 0b1000_0010, 1, 3),
 
             # Arithmetic
+            0x69 => Opcode.new(:adc_imm, 'Add With Carry', AddressingMode::IMMEDIATE, 0b1100_0011, 2, 2),
+
             # 0xE8 => Opcode.new(:inx, 'Increment Index Register X', AddressingMode::IMPLIED, 0b1000_0010, 1, 2),
             0xC8 => Opcode.new(:iny, 'Increment Index Register Y', AddressingMode::IMPLIED, 0b1000_0010, 1, 2),
 
+            0xE0 => Opcode.new(:cpx_imm, 'Compare Index Register X with Memory', AddressingMode::IMMEDIATE, 0b1000_0011, 2, 2),
+
+
             # Subroutine Calls
             0x20 => Opcode.new(:jsr_abs, 'Jump to Subroutine', AddressingMode::ABSOLUTE, 0b0000_0000, 3, 6),
+
 
             # Control Flow
             0xD0 => Opcode.new(:bne, 'Branch if Not Equal', AddressingMode::PROGRAM_COUNTER_RELATIVE, 0b0000_0000, 2, 2),
@@ -119,6 +128,13 @@ module Snes::CPU::Instructions
             0x80 => Opcode.new(:bra, 'Branch Always', AddressingMode::PROGRAM_COUNTER_RELATIVE, 0b0000_0000, 2, 3),
 
             0x00 => Opcode.new(:brk, 'Software Break', AddressingMode::STACK_INTERRUPT, 0b0001_1100, 2, 7),
+
+            0x70 => Opcode.new(:bvs, 'Branch if Overflow Set', AddressingMode::PROGRAM_COUNTER_RELATIVE, 0b0000_0000, 2, 2),
+
+
+            # Bit Manipulation
+            0x2A => Opcode.new(:rol_a, 'Rotate Memory or Accumulator Left', AddressingMode::ACCUMULATOR, 0b1000_0011, 1, 2),
+            # 0x76 => Opcode.new(:ror_dp_x, 'Rotate Memory or Accumulator Right ', AddressingMode::DIRECT_PAGE_INDEXED_X, 0b1000_0011, 2, 6),
         }
     end
 end

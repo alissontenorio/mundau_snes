@@ -53,10 +53,13 @@ module Snes::APU
             0x2143 => 0xF7
         }
 
-        attr_accessor :ram, :registers, :ipl_writable, :debug
+        attr_accessor :aram, :registers, :ipl_writable, :debug
 
         def setup(debug = false)
-            @ram = Array.new(0x10000, 0)       # Full 64KB RAM
+            # Upon power-up, APU RAM tends to contain a stable repeating 64-byte pattern: 32x00h, 32xFFh
+            # (that, for APUs with two Motorola MCM51L832F12 32Kx8 SRAM chips; other consoles may use different chips
+            # with different garbage/patterns). After Reset, the boot ROM changes [0000h..0001h]=Entrypoint, and [0002h..00EFh]=00h).
+            @aram = Array.new(0x10000, 0)       # Full 64KB RAM
             # Registers - For 0x00F0–0x00FF I/O
             @registers = RegisterBank.new
             @debug = debug
@@ -99,15 +102,15 @@ module Snes::APU
             raise "No block given to access" unless block_given?
 
             case address
-            when 0x0000..0x00EF  # Zero Page RAM
+            when 0x0000..0x00EF  # Zero Page RAM (typically used for CPU pointers/variables)
                 access_ram(address, &block)
-            when 0x00F0..0x00FF  # Sound CPU Registers
+            when 0x00F0..0x00FF  # Sound CPU Registers # I/O Ports (writes are also passed to RAM)
                 access_register(address, &block)
-            when 0x0100..0x01FF  # Stack Page RAM
+            when 0x0100..0x01FF  # Stack Page RAM # (typically used for CPU stack)
                 access_ram(address, &block)
-            when 0x0200..0xFFBF  # RAM
+            when 0x0200..0xFFBF  # RAM # (code, data, dir-table, brr-samples, echo-buffer, etc.)
                 access_ram(address, &block)
-            when 0xFFC0..0xFFFF  # IPL ROM or RAM
+            when 0xFFC0..0xFFFF  # IPL ROM or RAM (selectable via Port 00F1h)
                 access_ipl_rom(address, &block)
             else
                 raise "Invalid memory access at #{address.to_s(16)}"
@@ -115,11 +118,11 @@ module Snes::APU
         end
 
         def access_ram(address)
-            yield(@ram, address)
+            yield(@aram, address)
         end
 
         def access_stack(address)
-            yield(@ram, address) # Stack is just a special region in RAM
+            yield(@aram, address) # Stack is just a special region in RAM
         end
 
         def access_register(address)

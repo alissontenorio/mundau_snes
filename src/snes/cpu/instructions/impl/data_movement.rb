@@ -41,8 +41,6 @@ module Snes::CPU::Instructions::DataMovement
 
     def lda_dp_indirect_long_y # 0xB7
         lda
-
-        @cycles += 1 if (@dp & 0xFF) != 0 # Add 1 cycle if Direct Page is unaligned
     end
 
     # STA
@@ -60,14 +58,12 @@ module Snes::CPU::Instructions::DataMovement
         end
     end
 
-    def sta_imm # 0x8D
+    def sta_abs # 0x8D
         sta
     end
 
     def sta_dp
         sta
-        # Add 1 cycle if Direct Page is unaligned
-        @cycles += 1 if (@dp & 0xFF) != 0
     end
 
     # STZ
@@ -127,6 +123,20 @@ module Snes::CPU::Instructions::DataMovement
 
     # Pull Instructions
     # PLA
+    def pla # 0x68
+        if status_p_flag?(:m)
+            value = pull_byte
+            @a = (@a & 0xFF00) | value
+            set_nz_flags(value, true)
+        else
+            value = pull_word
+            @a = value
+            set_nz_flags(value, false)
+
+            @cycles += 1
+        end
+    end
+
     # PLP
     # PLX
     # PLY
@@ -180,7 +190,16 @@ module Snes::CPU::Instructions::DataMovement
     # MVP
 
     # Exchange Instructions
+
     # XBA
+    def xba # 0xEB
+        low = @a & 0x00FF
+        high = (@a & 0xFF00) >> 8
+
+        @a = (low << 8) | high
+
+        set_nz_flags(@a & 0x00FF, true)
+    end
 
     # XCE
     # This instruction is the only means provided by the 65802 and 65816 to shift between 6502 emulation

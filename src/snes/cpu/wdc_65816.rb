@@ -320,7 +320,24 @@ module Snes
                 push_byte((value >> 8) & 0xFF) # high byte
             end
 
-            def set_nz_flags(value, is_8_bit)
+            def pull_byte
+                if @emulation_mode
+                    @sp = (@sp + 1) & 0xFF
+                    address = 0x0100 | (@sp & 0xFF)
+                    @memory.access(address, :read)
+                else
+                    @sp = (@sp + 1) & 0xFFFF
+                    @memory.access(@sp, :read)
+                end
+            end
+
+            def pull_word
+                low  = pull_byte
+                high = pull_byte
+                (high << 8) | low
+            end
+
+            def set_nz_flags(value, is_8_bit=true)
                 if is_8_bit
                     set_p_flag(:z, value & 0xFF == 0)
                     set_p_flag(:n, (value & 0x80) != 0)
@@ -329,6 +346,41 @@ module Snes
                     set_p_flag(:n, (value & 0x8000) != 0)
                 end
             end
+
+            def bcd_add_8bit(a, b, carry_in)
+                low = (a & 0x0F) + (b & 0x0F) + carry_in
+                carry = 0
+                if low > 9
+                    low = (low + 6) & 0x0F
+                    carry = 1
+                end
+
+                high = (a >> 4) + (b >> 4) + carry
+                if high > 9
+                    high = (high + 6) & 0x0F
+                    carry_out = true
+                else
+                    carry_out = false
+                end
+
+                result = ((high << 4) | low) & 0xFF
+                [result, carry_out]
+            end
+
+            def bcd_add_16bit(a, b, carry_in)
+                carry = carry_in
+
+                # Add lower byte BCD
+                lo, carry_lo = bcd_add_8bit(a & 0xFF, b & 0xFF, carry)
+                # Add upper byte BCD with carry from lower
+                hi, carry_hi = bcd_add_8bit((a >> 8) & 0xFF, (b >> 8) & 0xFF, carry_lo ? 1 : 0)
+
+                result = (hi << 8) | lo
+                carry_out = carry_hi
+
+                [result, carry_out]
+            end
+
         end
     end
 end

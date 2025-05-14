@@ -55,17 +55,19 @@ module Snes::APU
 
         attr_accessor :aram, :registers, :ipl_writable, :debug
 
-        def setup(debug = false)
+        def setup(bus, debug = false)
             # Upon power-up, APU RAM tends to contain a stable repeating 64-byte pattern: 32x00h, 32xFFh
             # (that, for APUs with two Motorola MCM51L832F12 32Kx8 SRAM chips; other consoles may use different chips
             # with different garbage/patterns). After Reset, the boot ROM changes [0000h..0001h]=Entrypoint, and [0002h..00EFh]=00h).
             @aram = Array.new(0x10000, 0)       # Full 64KB RAM
             # Registers - For 0x00F0–0x00FF I/O
             @registers = RegisterBank.new
+            @bus = bus
             @debug = debug
         end
 
-        def read(address)
+        def read(address) # ToDo: Refactor read and write
+            return @bus.read_cpu_to_apu_port(address) if (0xF4..0xF7).include?(address)
             access(address) { |mem, addr| mem[addr] }
         end
 
@@ -74,6 +76,8 @@ module Snes::APU
                 $apu_logger.warn("Attempted write to restricted address range: 0x%04X" % address)
                 return
             end
+
+            return @bus.write_apu_to_cpu_port(address, value) if (0xF4..0xF7).include?(address)
 
             access(address) { |mem, addr| mem[addr] = value }
         end

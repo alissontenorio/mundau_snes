@@ -62,6 +62,7 @@ module Snes::CPU::Instructions
 
 
             # Data Movement
+            0xCA => Opcode.new(:dex, 'Decrement Index Register X', AddressingMode::IMPLIED, 0b1000_0010, 1, 2),
             0x48 => Opcode.new(:pha, 'Push Accumulator', AddressingMode::STACK_PUSH, 0b0000_0000, 1, 3),
             0x68 => Opcode.new(:pla, 'Pull Accumulator', AddressingMode::STACK_PULL, 0b1000_0010, 1, 4),
 
@@ -116,6 +117,7 @@ module Snes::CPU::Instructions
             0xC8 => Opcode.new(:iny, 'Increment Index Register Y', AddressingMode::IMPLIED, 0b1000_0010, 1, 2),
 
             0xE0 => Opcode.new(:cpx_imm, 'Compare Index Register X with Memory', AddressingMode::IMMEDIATE, 0b1000_0011, 2, 2),
+            0xC0 => Opcode.new(:cpy_imm, 'Compare Index Register Y with Memory', AddressingMode::IMMEDIATE, 0b1000_0011, 2, 2),
 
 
             # Subroutine Calls

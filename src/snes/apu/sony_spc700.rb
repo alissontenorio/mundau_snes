@@ -1,5 +1,6 @@
 require_relative 'register'
 require_relative 'instructions/opcodes'
+require_relative 'instructions/fetch_data'
 require_relative 'memory'
 require_relative '../../exceptions/apu_exceptions'
 
@@ -11,15 +12,16 @@ require_relative '../../exceptions/apu_exceptions'
 module Snes::APU
     class SPC700
         # https://github.com/yupferris/TasmShiz/blob/master/spc700.txt
-        include Snes::APU::Instructions
-        include Snes::APU::Instructions::Opcodes
+        include Instructions
+        include Instructions::Opcodes
+        include Instructions::FetchData
 
         attr_accessor :pc, :sp, :a, :x, :y, :ya, :psw
         attr_accessor :cycles, :current_opcode_data, :debug
         attr_accessor :opcodes_table
         attr_accessor :memory
 
-        def setup(debug = false)
+        def setup(bus, debug = false)
             # program counter
             @pc = 0xFFC0
 
@@ -53,7 +55,7 @@ module Snes::APU
             @cycles = 0
 
             @memory = Snes::APU::Memory.new
-            @memory.setup(@debug)
+            @memory.setup(bus, @debug)
 
             @opcodes_table = Snes::APU::Instructions::Opcodes::TABLE
             @current_opcode_data = nil
@@ -101,6 +103,7 @@ module Snes::APU
                 increment_pc! # Always increment PC after fetching an instruction
                 send(@current_opcode_data[1].handler) # Call Instruction
                 @cycles += @current_opcode_data[1].base_cycles
+                $stdout.flush if @debug
                 yield if block_given? # Sleep to syncronize clock
             end
 
@@ -129,15 +132,21 @@ module Snes::APU
             # @memory.read(address & 0xFFFF)  # 64KB memory wrapping
             value = @memory.read(address & 0xFFFF)  # 64KB memory wrapping
             if @debug && !value.nil?
-                puts "APU - 0x#{@current_opcode_data[0].to_s(16)} - Operation #{@current_opcode_data[1].handler} - PC: #{(@pc- 0xFFC0).to_s(16)} - Reading value 0x%02X from address 0x%04X - SPC700" % [value, address]
-                $apu_logger.debug("0x#{@current_opcode_data[0].to_s(16)} - Operation #{@current_opcode_data[1].handler} - PC: #{(@pc- 0xFFC0).to_s(16)} - Reading value 0x%02X from address 0x%04X - SPC700" % [value, address])
+                puts "APU - 0x#{@current_opcode_data[0].to_s(16)} - Operation #{@current_opcode_data[1].handler} - PC: #{format("%04X", @pc)} - #{(@pc - 0xFFC0).to_s(16)} - Reading value 0x%02X from address 0x%04X - SPC700" % [value, address]
+                $apu_logger.debug("0x#{@current_opcode_data[0].to_s(16)} - Operation #{@current_opcode_data[1].handler} - PC: #{format("%04X", @pc)} - #{(@pc - 0xFFC0).to_s(16)} - Reading value 0x%02X from address 0x%04X - SPC700" % [value, address])
             end
             value
         end
 
+        def read_word(address)
+            low = read_byte(address)
+            high = read_byte((address + 1) & 0xFFFF) # Increment PC by 1
+            (high << 8) | low
+        end
+
         def write_byte(address, value)
-            puts "APU - 0x#{@current_opcode_data[0].to_s(16)} - Operation #{@current_opcode_data[1].handler} - PC: #{(@pc- 0xFFC0).to_s(16)} - Writing value 0x%02X to address 0x%04X - SPC700" % [value, address] if @debug
-            $apu_logger.debug("0x#{@current_opcode_data[0].to_s(16)} - Operation #{@current_opcode_data[1].handler} - PC: #{(@pc- 0xFFC0).to_s(16)} - Writing value 0x%02X to address 0x%04X - SPC700" % [value, address]) if @debug
+            puts "APU - 0x#{@current_opcode_data[0].to_s(16)} - Operation #{@current_opcode_data[1].handler} - PC: #{format("%04X", @pc)} -  #{(@pc- 0xFFC0).to_s(16)} - Writing value 0x%02X to address 0x%04X - SPC700" % [value, address] if @debug
+            $apu_logger.debug("0x#{@current_opcode_data[0].to_s(16)} - Operation #{@current_opcode_data[1].handler} - PC: #{format("%04X", @pc)} - #{(@pc- 0xFFC0).to_s(16)} - Writing value 0x%02X to address 0x%04X - SPC700" % [value, address]) if @debug
             @memory.write(address, value)
         end
 
@@ -179,7 +188,6 @@ module Snes::APU
         end
 
         def set_nz_flags(value, is_8_bit = true)
-            @psw ||= 0
             if is_8_bit
                 set_p_flag(:z, (value & 0xFF) == 0)
                 set_p_flag(:n, (value & 0x80) != 0)

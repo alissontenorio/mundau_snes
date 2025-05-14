@@ -8,10 +8,61 @@ module Snes::CPU::Instructions::Arithmetic
 
     # Single Byte Operand: Add one or subtract one from the value X or Y register
     # Execute in two cycles
+
     # DEX
+    def dex
+        if status_p_flag?(:x)
+            @x = (@x - 1) & 0x00FF
+            set_nz_flags(@x)
+        else
+            @x = (@x - 1) & 0xFFFF
+            set_nz_flags(@x, false)
+        end
+    end
+
     # DEY
+
     # INX
+
+    # === Opcode 0xE8 ─ INX (Increment X) =========================================
+    #
+    # Increments the X register.
+    #
+    # Mode: Implied
+    # Bytes: 1
+    # Cycles: 2 cycles (8-bit mode), 2 (+1*) cycles (16-bit mode)
+    # * The extra cycle occurs only if X is in 16-bit mode and the instruction crosses a page boundary when fetching the opcode.
+    #
+    # Affected Flags:
+    #   - N: Set if the result has the most significant bit set (bit 7 or bit 15)
+    #   - Z: Set if the result is zero
+    #
+    # Notes:
+    # - The size of X is controlled by the X flag (P register, bit 5)
+    #     - X = 0 → X/Y registers are 16 bits
+    #     - X = 1 → X/Y registers are 8 bits
+    #
+    # @return [void]
+    def inx # 0xE8
+        if status_p_flag?(:x)
+            @x = (@x + 1) & 0x00FF
+            set_nz_flags(@x, true)
+        else
+            @x = (@x + 1) & 0xFFFF
+            set_nz_flags(@x, false)
+        end
+    end
+
     # INY
+    def iny # 0xC8
+        if status_p_flag?(:x)
+            @y = (@y + 1) & 0xFF
+            set_nz_flags(@y, true)
+        else
+            @y = (@y + 1) & 0xFFFF
+            set_nz_flags(@y, false)
+        end
+    end
 
     # ADC
     def adc_imm # 0x69
@@ -101,43 +152,20 @@ module Snes::CPU::Instructions::Arithmetic
     end
 
     # CPY
+    def cpy_imm # 0xE0
+        operand = fetch_data(p_flag: :x)
 
-    # === Opcode 0xE8 ─ INX (Increment X) =========================================
-    #
-    # Increments the X register.
-    #
-    # Mode: Implied
-    # Bytes: 1
-    # Cycles: 2 cycles (8-bit mode), 2 (+1*) cycles (16-bit mode)
-    # * The extra cycle occurs only if X is in 16-bit mode and the instruction crosses a page boundary when fetching the opcode.
-    #
-    # Affected Flags:
-    #   - N: Set if the result has the most significant bit set (bit 7 or bit 15)
-    #   - Z: Set if the result is zero
-    #
-    # Notes:
-    # - The size of X is controlled by the X flag (P register, bit 5)
-    #     - X = 0 → X/Y registers are 16 bits
-    #     - X = 1 → X/Y registers are 8 bits
-    #
-    # @return [void]
-    def inx # 0xE8
         if status_p_flag?(:x)
-            @x = (@x + 1) & 0x00FF
-            set_nz_flags(@x, true)
-        else
-            @x = (@x + 1) & 0xFFFF
-            set_nz_flags(@x, false)
-        end
-    end
+            result = (@y & 0xFF) - operand
 
-    def iny # 0xC8
-        if status_p_flag?(:x)
-            @y = (@y + 1) & 0xFF
-            set_nz_flags(@y, true)
+            set_nz_flags(result, true)
+            set_p_flag(:c, (@y & 0xFF) >= operand)
         else
-            @y = (@y + 1) & 0xFFFF
-            set_nz_flags(@y, false)
+            result = (@y & 0xFFFF) - operand
+
+            set_nz_flags(result, false)
+            set_p_flag(:c, (@y & 0xFFFF) >= operand)
+            @cycles += 1
         end
     end
 end

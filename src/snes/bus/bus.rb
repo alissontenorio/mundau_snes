@@ -18,6 +18,20 @@ module Snes
 
             attr_accessor :ppu, :apu
 
+            CPU_TO_APU_IO = {
+                0x2140 => [0xF4, 0],
+                0x2141 => [0xF5, 0],
+                0x2142 => [0xF6, 0],
+                0x2143 => [0xF7, 0]
+            }
+
+            APU_TO_CPU_IO = {
+                0xF4 => [0x2140, 0],
+                0xF5 => [0x2141, 0],
+                0xF6 => [0x2142, 0],
+                0xF7 => [0x2143, 0]
+            }
+
             def setup(debug = false)
                 @ppu_mutex = Mutex.new
                 @apu_mutex = Mutex.new
@@ -54,23 +68,41 @@ module Snes
                 end
             end
 
-            def read_apu(address)
-                # Snes::APU::Registers.debug_print(:read, address) if @debug
-                @apu_mutex.synchronize do
-                    raise "APU not set on Bus" unless @apu
-                    # puts "Reading from APU register #{address.to_s(16)}"
-                    @apu.read(address)
-                end
+            def read_cpu_to_apu_port(address)
+                address = APU_TO_CPU_IO[address][0]
+                CPU_TO_APU_IO[address][1]
             end
 
-            def write_apu(address, value)
-                # Snes::APU::Registers.debug_print(:write_register, address, value) if @debug
-                @apu_mutex.synchronize do
-                    raise "APU not set on Bus" unless @apu
-                    # puts "Writing to APU register #{address.to_s(16)} with value #{value.to_s(16)}"
-                    @apu.write(address, value)
-                end
+            def write_cpu_to_apu_port(address, value)
+                CPU_TO_APU_IO[address][1] = value
             end
+
+            def read_apu_to_cpu_port(address)
+                address = CPU_TO_APU_IO[address][0]
+                APU_TO_CPU_IO[address][1]
+            end
+
+            def write_apu_to_cpu_port(address, value)
+                APU_TO_CPU_IO[address][1] = value
+            end
+
+            # def read_apu(address)
+            #     # Snes::APU::Registers.debug_print(:read, address) if @debug
+            #     @apu_mutex.synchronize do
+            #         raise "APU not set on Bus" unless @apu
+            #         # puts "Reading from APU register #{address.to_s(16)}"
+            #         @apu.read(address)
+            #     end
+            # end
+            #
+            # def write_apu(address, value)
+            #     # Snes::APU::Registers.debug_print(:write_register, address, value) if @debug
+            #     @apu_mutex.synchronize do
+            #         raise "APU not set on Bus" unless @apu
+            #         # puts "Writing to APU register #{address.to_s(16)} with value #{value.to_s(16)}"
+            #         @apu.write(address, value)
+            #     end
+            # end
         end
     end
 end

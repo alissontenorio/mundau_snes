@@ -223,9 +223,11 @@ module Snes
 
             def access_apu(bank, offset, operation, value)
                 if operation == :read
-                    value = @bus.read_apu(offset)
+                    # value = @bus.read_apu(offset)
+                    value = @bus.read_apu_to_cpu_port(offset)
                 elsif operation == :write
-                    value = @bus.write_apu(offset, value)
+                    # value = @bus.write_apu(offset, value)
+                    value = @bus.write_cpu_to_apu_port(offset, value)
                 else
                     raise "Unknown operation: #{operation}"
                 end

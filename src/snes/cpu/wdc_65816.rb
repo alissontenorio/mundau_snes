@@ -47,7 +47,8 @@ module Snes
                 # The register can be either 8 or 16 bits, depending on the CPU's mode.
                 #
                 # @return [Integer]
-                @x = 0x49
+                # @x = 0x49
+                @x = 00
 
                 # Same above The register can be either 8 or 16 bits
                 @y = 0
@@ -339,7 +340,7 @@ module Snes
 
             def set_nz_flags(value, is_8_bit=true)
                 if is_8_bit
-                    set_p_flag(:z, value & 0xFF == 0)
+                    set_p_flag(:z, (value & 0xFF) == 0)
                     set_p_flag(:n, (value & 0x80) != 0)
                 else
                     set_p_flag(:z, (value & 0xFFFF) == 0)

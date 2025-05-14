@@ -1,16 +1,16 @@
 module Snes
     module APU
         module Instructions
-            # implement this, current to implement: eb
+            # implement this, current to implement: e4
             # cd, bd, e8, c6, 1d, d0, 8f, 78, 2f, eb, 7e, e4, cb, d7, fc, ab, 10, ba, da, c4, dd, 5d, 1f, c0
-            # eb, 7e, e4, cb, d7, fc, ab, 10, c0
+            # cb, d7, fc, ab, 10, c0
 
             # 2F 19 - Bra rel                - Feito
-            # EB F4 - Mov Y, dp
+            # EB F4 - Mov Y, dp              - Feito
             # D0 FC - BNE Rel                - Feito
-            # 7E F4 - CMP Y, dp
+            # 7E F4 - CMP Y, dp              - Feito
             # D0 0B - BNE rel                - Feito
-            # E4 F5 - MOV A, dp
+            # E4 F5 - MOV A, dp              - Feito
             # CB F4 - MOV dp, Y
             # D7 00 - MOV [dp]+Y, A
             # FC - INC Y
@@ -32,27 +32,33 @@ module Snes
             # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |  Operation  | Addressing Mode
             # MOV X, #imm	     0xCD	   LDX #imm          2	      2	      N-----Z-      X <- imm          Immediate
             def mov_x_imm
-                value = read_byte(@pc)     # Fetch immediate value (next byte after opcode)
-                increment_pc!
-
-                @x = value               # Set X register
+                value = fetch_data
+                @x = value
                 set_nz_flags(value)
             end
 
             # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |  Operation  | Addressing Mode
             # MOV A, #imm       0xE8       LDA #imm          2         2     N.....Z.      A <- imm          Immediate
             def mov_a_imm
-                value = read_byte(@pc)
-                increment_pc!
-
+                value = fetch_data
                 @a = value
                 set_nz_flags(value)
             end
 
             # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |   Operation   | Addressing Mode
-            # MOV	SP, X	     0xBD	        TXS          1	       2	  --------      SP <- X     Implied type 1 (INDIRECT = (X))
-            def mov_sp_x
-                @sp = @x
+            # MOV Y, dp        0xEB         LDY dp          2          3      N.....Z.      Y <- (dp)      Direct Page
+            def mov_y_dp
+                dp = fetch_data
+                @y = read_byte(dp)
+                set_nz_flags(@y)
+            end
+
+            # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |   Operation   | Addressing Mode
+            #  MOV A, dp       0xE4        LDA dp           2          3      N.....Z.      A <- (dp)     Direct Page
+            def mov_a_dp
+                dp = fetch_data
+                @a = read_byte(dp)
+                set_nz_flags(@a)
             end
 
             # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |   Operation   | Addressing Mode
@@ -64,10 +70,21 @@ module Snes
             # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |   Operation   | Addressing Mode
             # MOV dp, A         0xC4        STA dp          2          4       ........     A -> (dp)     Direct Page
             def mov_dp_a
-                dp = read_byte(@pc)
-                increment_pc!
-
+                dp = fetch_data
                 write_byte(dp, @a)
+            end
+
+            # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |   Operation   | Addressing Mode
+            # MOV dp, Y         0xCB        STY dp         2           4      ........      Y -> (dp)     Direct Page
+            def mov_dp_y
+                dp = fetch_data
+                write_byte(dp, y)
+            end
+
+            # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |   Operation   | Addressing Mode
+            # MOV	SP, X	     0xBD	        TXS          1	       2	  --------      SP <- X     Implied type 1 (INDIRECT = (X))
+            def mov_sp_x
+                @sp = @x
             end
 
             # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |   Operation   | Addressing Mode
@@ -87,20 +104,20 @@ module Snes
             end
 
             # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |   Operation   | Addressing Mode
-            # MOV Y, dp        0xEB         LDY dp          2          3      N.....Z.      Y <- (dp)
-            def mov_y_dp
-                dp = read_byte(@pc)
+            # MOV dp, #imm      0x8F            ?            3         5      ........     (dp) <- imm    IMMEDIATE_DATA_TO_DP
+            def mov_ind_dp_imm
+                imm = read_byte(@pc)
+                increment_pc!
+                dp = read_byte(@pc) # address
                 increment_pc!
 
-                @y = read_byte(dp)
-                set_nz_flags(@y)
+                write_byte(dp, imm)
             end
 
             # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |   Operation   | Addressing Mode
             # MOVW YA, dp       0xBA            ?           2          5      N.....Z.  YA <- (dp+1)(dp)  Direct Page
             def movw_ya_dp # 0xBA
-                dp = read_byte(@pc)
-                increment_pc!
+                dp = fetch_data
 
                 @a = read_byte(dp)
                 @y = read_byte((dp + 1) & 0xFF)
@@ -112,8 +129,7 @@ module Snes
             # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |   Operation   | Addressing Mode
             # MOVW dp, YA      0xDA          ?              2          4      ........  (dp+1)(dp) <- YA  Direct Page
             def movw_dp_ya
-                dp = read_byte(@pc)
-                increment_pc!
+                dp = fetch_data
 
                 write_byte(dp, @a)
                 write_byte((dp + 1) & 0xFF, @y)
@@ -129,8 +145,7 @@ module Snes
             # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |   Operation   | Addressing Mode
             # BNE rel           0xD0        BNE rel          2        2/4     ........    Branch if Z=0   Relative (PC Relative)
             def bne_rel
-                offset = converts_8bit_unsigned_to_signed(read_byte(@pc))
-                increment_pc!
+                offset = fetch_data
 
                 unless status_p_flag?(:z)
                     @pc = (@pc + offset) & 0xFFFF
@@ -141,21 +156,9 @@ module Snes
             # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |   Operation   | Addressing Mode
             # BRA rel           0x2F       BRA rel         2          4      ........     Branch always   Program Counter Relative
             def bra_rel
-                offset = converts_8bit_unsigned_to_signed(read_byte(@pc))
-                increment_pc!
+                offset = fetch_data
 
                 @pc = (@pc + offset) & 0xFFFF
-            end
-
-            # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |   Operation   | Addressing Mode
-            # MOV dp, #imm      0x8F            ?            3         5      ........     (dp) <- imm    IMMEDIATE_DATA_TO_DP
-            def mov_ind_dp_imm
-                imm = read_byte(@pc)
-                increment_pc!
-                dp = read_byte(@pc) # address
-                increment_pc!
-
-                write_byte(dp, imm)
             end
 
             # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |   Operation   | Addressing Mode
@@ -167,9 +170,35 @@ module Snes
                 increment_pc!
 
                 value = read_byte(dp)
+                result = (value - imm) & 0xFF
 
                 set_p_flag(:c, value >= imm)
-                set_nz_flags(value - imm)
+                set_nz_flags(result)
+            end
+
+            # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |   Operation   | Addressing Mode
+            # CMP Y, dp         0x7E        CPY dp          2          3      N.....ZC      Y - (dp)        Direct Page
+            def cmp_y_dp
+                dp = fetch_data
+
+                value = read_byte(dp)
+                result = (@y - value) & 0xFF
+
+                set_p_flag(:c, @y >= value)
+                set_nz_flags(result)
+            end
+
+            # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |   Operation   | Addressing Mode
+            # JMP [!abs+X]      0x1F     JMP (abs, X)       3         6       ........ PC<-(abs+X+1)(abs+X)  Absolute (Absolute Indexed by X)
+            def jmp_abs_x
+                base_addr = read_word(@pc)
+                increment_pc!(2) # toDo: remove this
+
+                effective_addr = (base_addr + @x) & 0xFFFF
+
+                target_addr = read_word(effective_addr)
+
+                @pc = target_addr
             end
         end
     end

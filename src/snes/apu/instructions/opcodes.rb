@@ -32,6 +32,7 @@ module Snes::APU::Instructions::Opcodes
         0xC6 => Opcode.new(:mov_ind_x_a, 'MOV (X), A', AddressingMode::IMPLIED, 0b0000_0000, 1, 2),
         0xC4 => Opcode.new(:mov_dp_a, 'MOV dp, A', AddressingMode::DIRECT_PAGE, 0b0000_0000, 2, 4),
         0xCB => Opcode.new(:mov_dp_y, 'MOV dp, Y', AddressingMode::DIRECT_PAGE, 0b0000_0000, 2, 4),
+        0xD7 => Opcode.new(:mov_ind_dp_y_a, 'MOV [dp]+Y, A', AddressingMode::INDIRECT_Y_INDEXED_INDIRECT, 0b0000_0000, 2, 7),
 
         0xBD => Opcode.new(:mov_sp_x, 'MOV Y, #imm', AddressingMode::IMPLIED, 0b0000_0000, 1, 2), # Implied (type 1)
         0xDD => Opcode.new(:mov_a_y, 'MOV A, Y', AddressingMode::IMPLIED, 0b1000_0010, 1, 2),
@@ -43,14 +44,18 @@ module Snes::APU::Instructions::Opcodes
 
         0x1D => Opcode.new(:dec_x, 'DEC X', AddressingMode::IMPLIED, 0b1000_0010, 1, 2), # Implied (type 1)
 
-        0xD0 => Opcode.new(:bne_rel, 'BNE rel', AddressingMode::RELATIVE, 0b0000_0000, 2, 2),
-        0X2F => Opcode.new(:bra_rel, 'BRA rel', AddressingMode::RELATIVE, 0b0000_0000, 2, 4),
+        0xD0 => Opcode.new(:bne, 'BNE rel', AddressingMode::RELATIVE, 0b0000_0000, 2, 2),
+        0X2F => Opcode.new(:bra, 'BRA rel', AddressingMode::RELATIVE, 0b0000_0000, 2, 4),
+        0x10 => Opcode.new(:bpl, 'BPL rel', AddressingMode::RELATIVE, 0b0000_0000, 2, 2),
 
         0x78 => Opcode.new(:cmp_ind_dp_imm, 'CMP dp, #imm', AddressingMode::IMMEDIATE_DATA_TO_DP, 0b1000_0011, 3, 5),
         0x7E => Opcode.new(:cmp_y_dp, 'CMP Y, dp', AddressingMode::DIRECT_PAGE, 0b1000_0011, 2, 3),
 
         0x1F => Opcode.new(:jmp_abs_x, 'JMP (abs, X)', AddressingMode::X_INDEXED_ABSOLUTE, 0b0000_0000, 3, 6),
 
+        0xAB => Opcode.new(:inc_dp, 'INC dp', AddressingMode::DIRECT_PAGE, 0b1000_0010, 2, 4),
+        # 0x3D => Opcode.new(:inc_x, 'INC X', AddressingMode::IMPLIED, 0b1000_0010, 1, 1),
+        0xFC => Opcode.new(:inc_y, 'INC Y', AddressingMode::IMPLIED, 0b1000_0010, 1, 1),
     }
 end
 

@@ -1,9 +1,7 @@
 module Snes
     module APU
         module Instructions
-            # implement this, current to implement: e4
-            # cd, bd, e8, c6, 1d, d0, 8f, 78, 2f, eb, 7e, e4, cb, d7, fc, ab, 10, ba, da, c4, dd, 5d, 1f, c0
-            # cb, d7, fc, ab, 10, c0
+            # current to implement: c0
 
             # 2F 19 - Bra rel                - Feito
             # EB F4 - Mov Y, dp              - Feito
@@ -11,14 +9,14 @@ module Snes
             # 7E F4 - CMP Y, dp              - Feito
             # D0 0B - BNE rel                - Feito
             # E4 F5 - MOV A, dp              - Feito
-            # CB F4 - MOV dp, Y
-            # D7 00 - MOV [dp]+Y, A
-            # FC - INC Y
+            # CB F4 - MOV dp, Y              - Feito
+            # D7 00 - MOV [dp]+Y, A          - Feito
+            # FC - INC Y                     - Feito
             # D0 F3 - BNE Rel                - Feito
-            # AB 01 - INC dp
-            # 10 EF - BPL rel
-            # 7E F4 - CMP Y, dp
-            # 10 EB - BPL rel
+            # AB 01 - INC dp                 - Feito
+            # 10 EF - BPL rel                - Feito
+            # 7E F4 - CMP Y, dp              - Feito
+            # 10 EB - BPL rel                - Feito
             # BA F6 - MOVW YA, dp            - Feito
             # DA 00 - MOVW dp, YA            - Feito
             # BA F4 - MOVW YA, dp            - Feito
@@ -26,7 +24,7 @@ module Snes
             # DD - MOV A, Y                  - Feito
             # 5D - MOV X, A                  - Feito
             # D0 DB - BNE rel                - Feito
-            # 1F 00 00 - JMP [!abs+X]
+            # 1F 00 00 - JMP [!abs+X]        - Feito
             # C0
 
             # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |  Operation  | Addressing Mode
@@ -88,6 +86,18 @@ module Snes
             end
 
             # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |   Operation   | Addressing Mode
+            # MOV [dp]+Y, A     0xD7     STA (dp), Y        2          7      ........  A -> ((dp+1)(dp)+Y)   Indirect Indexed by Y
+            def mov_ind_dp_y_a # 0xD7
+                dp = read_byte(@pc)
+                increment_pc!
+
+                base_addr = read_word(dp)
+
+                effective_addr = (base_addr + @y) & 0xFFFF
+                write_byte(effective_addr, @a)
+            end
+
+            # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |   Operation   | Addressing Mode
             # MOV A, Y          0xDD           TYA          1          2      N.....Z.       A <- Y       Implied (type 1) (Implied)
             def mov_a_y
                 @a = @y
@@ -144,7 +154,7 @@ module Snes
 
             # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |   Operation   | Addressing Mode
             # BNE rel           0xD0        BNE rel          2        2/4     ........    Branch if Z=0   Relative (PC Relative)
-            def bne_rel
+            def bne
                 offset = fetch_data
 
                 unless status_p_flag?(:z)
@@ -155,10 +165,21 @@ module Snes
 
             # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |   Operation   | Addressing Mode
             # BRA rel           0x2F       BRA rel         2          4      ........     Branch always   Program Counter Relative
-            def bra_rel
+            def bra
                 offset = fetch_data
 
                 @pc = (@pc + offset) & 0xFFFF
+            end
+
+            # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |   Operation   | Addressing Mode
+            # BPL rel           0x10       BPL rel           2      2/4       ........   Branch if N=0     Program Counter Relative
+            def bpl
+                offset = fetch_data
+
+                unless status_p_flag?(:n)
+                    @pc = (@pc + offset) & 0xFFFF
+                    @cycles += 2
+                end
             end
 
             # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |   Operation   | Addressing Mode
@@ -199,6 +220,31 @@ module Snes
                 target_addr = read_word(effective_addr)
 
                 @pc = target_addr
+            end
+
+            # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |   Operation   | Addressing Mode
+            # INC dp           0xAB        INC dp           2          4       N.....Z.      ++(dp)         Direct Page
+            def inc_dp
+                dp = fetch_data
+                value = read_byte(dp)
+                result = (value + 1) & 0xFF
+                write_byte(dp, result)
+                set_nz_flags(result)
+            end
+
+            # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |   Operation   | Addressing Mode
+            # INC X             0x3D         INY            1          2      N.....Z.        ++ X         Implied / Implied (type 1)
+            def inc_x
+                @x = (@x + 1) & 0xFF
+                set_nz_flags(@x)
+            end
+
+            # Instruction   |  Opcode  |   In 65816   |  Bytes  |  Cycles  |    Flags   |   Operation   | Addressing Mode
+            # INC Y             0xFC         INY            1          2      N.....Z.        ++ Y         Implied / Implied (type 1)
+            def inc_y
+                @y = (@y + 1) & 0xFF
+                puts "oxe"
+                set_nz_flags(@y)
             end
         end
     end

@@ -4,7 +4,6 @@ module Snes::CPU::Instructions::Arithmetic
     # Read-Modify-Write - set the n and z status flags to reflect the result of the operation
     # depending on whether the loaded number was negative (that is, had its high bit set), or was zero.
     # DEC
-    # INC
 
     # Single Byte Operand: Add one or subtract one from the value X or Y register
     # Execute in two cycles
@@ -21,6 +20,22 @@ module Snes::CPU::Instructions::Arithmetic
     end
 
     # DEY
+
+    # INC
+
+    # Instruction   |  Opcode  |  Bytes  |  Cycles  |    Flags   |    Operation    |  Addressing Mode
+    # INC A 	        0x1A 		 1 	        2      N-----Z-         INC A        	Accumulator
+    def inc_a
+        value = fetch_data
+
+        if status_p_flag?(:m)
+            @a = (@a & 0xFF00) | ((value + 1) & 0x00FF)
+            set_nz_flags(@a, true)
+        else
+            @a = (value + 1) & 0xFFFF
+            set_nz_flags(@a, false)
+        end
+    end
 
     # INX
 
@@ -45,7 +60,7 @@ module Snes::CPU::Instructions::Arithmetic
     # @return [void]
     def inx # 0xE8
         if status_p_flag?(:x)
-            @x = (@x + 1) & 0x00FF
+            @x = (@x & 0xFF00) | ((@x + 1) & 0x00FF)
             set_nz_flags(@x, true)
         else
             @x = (@x + 1) & 0xFFFF
@@ -56,7 +71,7 @@ module Snes::CPU::Instructions::Arithmetic
     # INY
     def iny # 0xC8
         if status_p_flag?(:x)
-            @y = (@y + 1) & 0xFF
+            @y = (@y & 0xFF00) | ((@y + 1) & 0x00FF)
             set_nz_flags(@y, true)
         else
             @y = (@y + 1) & 0xFFFF

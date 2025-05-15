@@ -46,5 +46,19 @@ module Snes::CPU::Instructions::ControlFlow
     end
 
     # BEQ
+
+    # Instruction       |  Opcode  |  Bytes  |  Cycles  |    Flags   |      Operation      |    Addressing Mode
+    # BEQ nearlabel     	0xF0          2 	     2    --------       Branch if Equal 	  Program Counter Relative
+    def beq
+        offset = fetch_data
+
+        if status_p_flag?(:z) # if flag is 1 jump occurs
+            old_pc = @pc
+            @pc = (@pc + offset) & 0xFFFF # Ensure 16 bits
+            increment_cycles_if_page_crossing(old_pc)
+            @cycles += 1
+        end
+    end
+
     # PER
 end

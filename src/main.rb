@@ -7,6 +7,7 @@ require_relative 'interface/app'
 extend Utils::FileOperations
 
 debug = ARGV[0] != "nd"
+
 megaman_x_rom_filepath = "/mnt/c/Users/Alisson/dev/pessoal/mundau_snes/roms/Mega Man X (E).smc"
 pacman_rom_filepath = "/mnt/c/Users/Alisson/dev/pessoal/mundau_snes/roms/pacman.smc"
 dkc2_rom_filepath = "/mnt/c/Users/Alisson/dev/pessoal/mundau_snes/roms/Donkey Kong Country 2 - Diddy's Kong Quest (USA) (En,Fr).sfc"
@@ -15,6 +16,7 @@ yoshi_rom_filepath = "/mnt/c/Users/Alisson/dev/pessoal/mundau_snes/roms/Super FX
 zelda_rom_filepath = "/mnt/c/Users/Alisson/dev/pessoal/mundau_snes/roms/Legend of Zelda, The - A Link to the Past (U) [!].smc"
 chrono_trigger_rom_filepath = "/mnt/c/Users/Alisson/dev/pessoal/mundau_snes/roms/Chrono Trigger (U) [!].smc"
 star_ocean_rom_filepath = "/mnt/c/Users/Alisson/dev/pessoal/mundau_snes/roms/S-DD1/Star Ocean (J) [!].smc"
+
 
 def set_logger
     log_directory = File.join(__dir__, '..', 'log')
@@ -59,7 +61,7 @@ def set_logger
     $ppu_logger.instance_variable_get(:@logdev).dev.sync = true
 end
 
-set_logger
+set_logger if debug
 
 # rom_raw = open_rom(pacman_rom_filepath) # LoRom
 # rom_raw = open_rom(dkc2_rom_filepath) # HiRom
@@ -81,14 +83,6 @@ emulator_thread = Thread.new {
     app.run
 }
 emulator_thread.abort_on_exception = true
-
-# if debug
-#     class Integer
-#         def to_s
-#             "0x%06X" % self  # Hexadecimal with zero-padding to 6 digits
-#         end
-#     end
-# end
 
 console.turn_on
 

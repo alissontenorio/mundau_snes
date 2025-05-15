@@ -13,3 +13,5 @@ gem 'glfw3'
 
 gem 'ffi' # Simulate snes clock
 gem 'fiddle'
+
+gem 'benchmark-ips'

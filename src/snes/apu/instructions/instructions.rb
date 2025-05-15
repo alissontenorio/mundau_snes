@@ -243,7 +243,6 @@ module Snes
             # INC Y             0xFC         INY            1          2      N.....Z.        ++ Y         Implied / Implied (type 1)
             def inc_y
                 @y = (@y + 1) & 0xFF
-                puts "oxe"
                 set_nz_flags(@y)
             end
         end

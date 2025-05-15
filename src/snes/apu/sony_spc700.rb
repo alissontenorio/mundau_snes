@@ -21,6 +21,8 @@ module Snes::APU
         attr_accessor :opcodes_table
         attr_accessor :memory
 
+        IGNORED_OPCODES_DEBUG = [0x7e, 0xd0, 0x10]
+
         def setup(bus, debug = false)
             # program counter
             @pc = 0xFFC0
@@ -93,7 +95,10 @@ module Snes::APU
                 @current_opcode_data = opcode, @opcodes_table[opcode]
                 raise APUOpcodeNotImplementedError.new(opcode), "Opcode 0x%02X not implemented" % opcode unless @current_opcode_data[1]
 
-                if @debug
+
+                @memory.debug = !IGNORED_OPCODES_DEBUG.include?(opcode) && @debug
+
+                if @debug && !IGNORED_OPCODES_DEBUG.include?(opcode)
                     # && opcode != 0x8F && opcode != 0xD0 && opcode != 0x1D
                     $apu_logger.debug(self.inspect)
                     puts
@@ -131,7 +136,7 @@ module Snes::APU
         def read_byte(address)
             # @memory.read(address & 0xFFFF)  # 64KB memory wrapping
             value = @memory.read(address & 0xFFFF)  # 64KB memory wrapping
-            if @debug && !value.nil?
+            if @debug && !value.nil? && !IGNORED_OPCODES_DEBUG.include?(@current_opcode_data[0])
                 puts "APU - 0x#{@current_opcode_data[0].to_s(16)} - Operation #{@current_opcode_data[1].handler} - PC: #{format("%04X", @pc)} - #{(@pc - 0xFFC0).to_s(16)} - Reading value 0x%02X from address 0x%04X - SPC700" % [value, address]
                 $apu_logger.debug("0x#{@current_opcode_data[0].to_s(16)} - Operation #{@current_opcode_data[1].handler} - PC: #{format("%04X", @pc)} - #{(@pc - 0xFFC0).to_s(16)} - Reading value 0x%02X from address 0x%04X - SPC700" % [value, address])
             end

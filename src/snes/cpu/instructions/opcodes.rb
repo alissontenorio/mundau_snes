@@ -115,7 +115,7 @@ module Snes::CPU::Instructions
 
             # 0xE8 => Opcode.new(:inx, 'Increment Index Register X', AddressingMode::IMPLIED, 0b1000_0010, 1, 2),
             0xC8 => Opcode.new(:iny, 'Increment Index Register Y', AddressingMode::IMPLIED, 0b1000_0010, 1, 2),
-            
+
             0x1A => Opcode.new(:inc_a, 'Increment', AddressingMode::ACCUMULATOR, 0b1000_0010, 1, 2),
 
             0xE0 => Opcode.new(:cpx_imm, 'Compare Index Register X with Memory', AddressingMode::IMMEDIATE, 0b1000_0011, 2, 2),
@@ -127,13 +127,11 @@ module Snes::CPU::Instructions
 
 
             # Control Flow
-            0xD0 => Opcode.new(:bne, 'Branch if Not Equal', AddressingMode::PROGRAM_COUNTER_RELATIVE, 0b0000_0000, 2, 2),
-
             0x80 => Opcode.new(:bra, 'Branch Always', AddressingMode::PROGRAM_COUNTER_RELATIVE, 0b0000_0000, 2, 3),
-
             0x00 => Opcode.new(:brk, 'Software Break', AddressingMode::STACK_INTERRUPT, 0b0001_1100, 2, 7),
-
             0x70 => Opcode.new(:bvs, 'Branch if Overflow Set', AddressingMode::PROGRAM_COUNTER_RELATIVE, 0b0000_0000, 2, 2),
+            0xD0 => Opcode.new(:bne, 'Branch if Not Equal', AddressingMode::PROGRAM_COUNTER_RELATIVE, 0b0000_0000, 2, 2),
+            0xF0 => Opcode.new(:beq, 'Branch if Equal', AddressingMode::PROGRAM_COUNTER_RELATIVE, 0b0000_0000, 2, 2),
 
 
             # Bit Manipulation

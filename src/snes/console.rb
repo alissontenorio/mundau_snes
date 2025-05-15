@@ -27,7 +27,7 @@ module Snes
         SRAM = Array.new(32768, 0) # 32 KB # Max access up to 32767 (0x7FFF)
         RAM = Array.new(131072, 0) # 128 KB # Max access up to 131071 (0x1FFFF)
 
-        FPS = 60
+        FPS = 1000
         CYCLES_PER_FRAME_NORMAL = (3_580_000.0 / FPS).to_i # 59,666
         CYCLES_PER_FRAME_SLOW   = (2_680_000.0 / FPS).to_i # 44,666
         
@@ -98,8 +98,7 @@ module Snes
         # end
 
         def run_cpu
-
-            puts "Run cpu" if @debug
+            puts "Run cpu" if @debug_cpu
             core = Snes::CPU::WDC65816.new
             # internal_cpu_registers = Snes::CPU::InternalCPURegisters.new
             # @m_map.set_internal_cpu_registers(internal_cpu_registers)
@@ -109,11 +108,15 @@ module Snes
             # sleep_time = (1.0 / 5)
 
             wait_until_ready # Wait all threads setup
+            sleep(0.1)
 
             # test_counter = 0
+
             while @running
+
                 # CPU execution loop
                 execute_cpu_instruction(core)
+
                 # This way it can continue to next instruction
                 # begin
                 #     execute_cpu_instruction
@@ -209,13 +212,13 @@ module Snes
                 end
             }
 
-            ppu_thread = Thread.new {
-                puts "Starting PPU thread with run_ppu"
-
-                with_thread_cleanup do
-                    run_ppu
-                end
-            }
+            # ppu_thread = Thread.new {
+            #     puts "Starting PPU thread with run_ppu"
+            #
+            #     with_thread_cleanup do
+            #         run_ppu
+            #     end
+            # }
 
             apu_thread = Thread.new {
                 puts "Starting APU thread with run_apu"
@@ -226,12 +229,12 @@ module Snes
             }
 
             cpu_thread.report_on_exception = true
-            ppu_thread.report_on_exception = true
+            # ppu_thread.report_on_exception = true
             apu_thread.report_on_exception = true
             cpu_thread.abort_on_exception = false
             cpu_thread.name = "CPU Thread"
-            ppu_thread.abort_on_exception = false
-            ppu_thread.name = "PPU Thread"
+            # ppu_thread.abort_on_exception = false
+            # ppu_thread.name = "PPU Thread"
             apu_thread.abort_on_exception = false
             apu_thread.name = "APU Thread"
 
@@ -249,6 +252,7 @@ module Snes
         end
 
         def turn_off
+            puts "Turning off"
             @shutdown_mutex.synchronize do
                 return if @shutdown
                 @shutdown = true

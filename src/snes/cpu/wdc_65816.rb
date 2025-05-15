@@ -145,13 +145,14 @@ module Snes
                 debug_opcode_data(opcode) if @debug
             end
 
+
+
             def fetch_decode_execute
                 @cycles = 0     # Clear cycles
                 @pc &= 0xFFFF   # If PC exceeeds FFFF
 
                 opcode_addr = full_pc(@pbr)
                 opcode = read_byte(opcode_addr)
-
                 get_opcode_data(opcode)
 
                 increment_pc! # Because of read_opcode

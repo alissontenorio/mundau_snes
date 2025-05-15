@@ -51,6 +51,7 @@ module Snes
             end
 
             def read_ppu(address)
+                return 0
                 @ppu_mutex.synchronize do
                     raise "PPU not set on Bus" unless @ppu
                     Snes::PPU::Registers.debug_print(:read, address) if @debug
@@ -60,6 +61,7 @@ module Snes
             end
 
             def write_ppu(address, value)
+                return 0
                 @ppu_mutex.synchronize do
                     raise "PPU not set on Bus" unless @ppu
                     Snes::PPU::Registers.debug_print(:write, address, value) if @debug

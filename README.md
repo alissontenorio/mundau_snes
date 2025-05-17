@@ -1,4 +1,4 @@
-Mundau Super Nintendo Emulator
+Ruby Super Nintendo Emulator
 
 Change ruby version on RubyMine:
 File -> Settings -> Ruby SDK
